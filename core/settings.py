@@ -27,6 +27,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -94,4 +95,10 @@ STATICFILES_FINDERS = [
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-CSRF_TRUSTED_ORIGINS = ['https://ca8e-82-215-121-205.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = [
+    'https://tg-feedback-bot-swxe.onrender.com',
+    'https://ca8e-82-215-121-205.ngrok-free.app' # твой ngrok тоже пусть останется
+]
+
+# Оптимизация для Render
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
