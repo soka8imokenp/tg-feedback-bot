@@ -1,0 +1,16 @@
+# Секреты
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+
+# База данных (на сервере будет своя или пустая)
+*.sqlite3
+
+# Настройки IDE
+.vscode/
+.idea/
