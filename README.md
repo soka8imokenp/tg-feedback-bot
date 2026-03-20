@@ -19,5 +19,5 @@
 
 1. **Клонируйте репозиторий:**
    ```bash
-   git clone [https://github.com/ВАШ_ЛОГИН/ИМЯ_РЕПОЗИТОРИЯ.git](https://github.com/devvesama/tg-feedback-bot.git)
-  
+   git clone [https://github.com/devvesama/tg-feedback-bot.git](https://github.com/devvesama/tg-feedback-bot.git)
+   cd tg-feedback-bot
