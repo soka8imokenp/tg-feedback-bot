@@ -1,14 +1,24 @@
 import os
 import django
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings') # Проверь имя папки с настройками
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 django.setup()
 
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
-if not User.objects.filter(username='admin').exists():
-    User.objects.create_superuser('admin', 'tokimachinedesu@gmail.com', 'devve08082002')
-    print("Admin created!")
+username = 'admin'
+password = 'твой_пароль_тут' # Укажи свой пароль
+
+user = User.objects.filter(username=username).first()
+
+if not user:
+    User.objects.create_superuser(username, 'admin@example.com', password)
+    print(f"--- Admin '{username}' created! ---")
 else:
-    print("Admin already exists.")
+    # ПРИНУДИТЕЛЬНО обновляем пароль и права, если он уже есть
+    user.set_password(password)
+    user.is_superuser = True
+    user.is_staff = True
+    user.save()
+    print(f"--- Admin '{username}' updated and fixed! ---")
