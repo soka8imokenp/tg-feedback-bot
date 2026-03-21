@@ -136,6 +136,7 @@
                     <span class="text-[8px] text-white/40 uppercase font-bold">{{ item.created_at|date:"d.m.Y H:i" }}</span>
                 </div>
                 <p class="text-white/90 text-xs font-medium leading-relaxed mb-4">{{ item.text }}</p>
+                
                 {% if item.reply_text %} 
                 <div class="mt-3 pt-3 border-t border-black/20">
                     <div class="flex items-center space-x-2 mb-2">
@@ -160,7 +161,7 @@
     <script>
         // 1. Инициализация Telegram
         const tg = window.Telegram.WebApp;
-        tg.ready(); // Сразу сообщаем, что готовы, чтобы убрать экран загрузки
+        tg.ready();
         tg.expand();
         tg.setHeaderColor('#0c0a14');
 
@@ -174,7 +175,7 @@
         if (selectWrapper) {
             selectWrapper.addEventListener('click', (e) => {
                 optionsList.classList.toggle('show');
-                arrow.style.transform = optionsList.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+                if(arrow) arrow.style.transform = optionsList.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
             });
         }
 
@@ -184,24 +185,26 @@
                 selectedText.innerText = e.target.innerText;
                 categoryInput.value = val;
                 optionsList.classList.remove('show');
-                arrow.style.transform = 'rotate(0deg)';
+                if(arrow) arrow.style.transform = 'rotate(0deg)';
                 e.stopPropagation();
             });
         });
 
-        // 3. Заполнение данных и ПЕРЕЗАГРУЗКА ДЛЯ ИСТОРИИ
+        // 3. Заполнение данных и ПЕРЕЗАГРУЗКА БЕЗ ЦИКЛА
         function initApp() {
             const user = tg.initDataUnsafe?.user;
             if (user && user.id) {
                 // Заполняем скрытые поля
-                document.getElementById('user_id').value = user.id;
-                document.getElementById('username').value = user.username || "anonymous";
+                const uId = document.getElementById('user_id');
+                const uName = document.getElementById('username');
+                if(uId) uId.value = user.id;
+                if(uName) uName.value = user.username || "anonymous";
 
-                // Проверяем, есть ли уже id в URL, чтобы не было вечного цикла
+                // Проверяем URL, чтобы не было вечного цикла
                 const urlParams = new URLSearchParams(window.location.search);
                 if (!urlParams.has('user_id')) {
-                    // Используем обратные кавычки для корректной подстановки!
-                    window.location.href = window.location.pathname + `?user_id=${user.id}`;
+                    const newUrl = window.location.pathname + `?user_id=${user.id}`;
+                    window.location.replace(newUrl); // Используем replace вместо href
                 }
             }
         }
