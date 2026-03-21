@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 username = 'admin'
-password = 'твой_пароль_тут' # Укажи свой пароль
+password = 'devve08082002' # Укажи свой пароль
 
 user = User.objects.filter(username=username).first()
 
