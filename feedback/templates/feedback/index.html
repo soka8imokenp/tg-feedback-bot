@@ -12,79 +12,44 @@
     
     <style>
         :root { --accent: #ad88b9; --dark-bg: #0c0a14; }
-        
         body { 
             background-color: var(--dark-bg);
             font-family: 'Unbounded', sans-serif;
-            margin: 0; 
-            display: flex; 
-            flex-direction: column;
-            align-items: center; 
-            justify-content: flex-start; 
-            min-height: 100vh;
-            padding-top: 2rem;
+            margin: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-start; 
+            min-height: 100vh; padding-top: 2rem;
         }
-
         .neo-card {
             position: relative;
             background-image: url("{% static 'feedback/kawaii.png' %}");
-            background-size: cover;
-            background-position: center;
-            border: 2px solid #000000;
-            box-shadow: 8px 8px 0px #000000;
-            border-radius: 32px;
-            overflow: hidden;
+            background-size: cover; background-position: center;
+            border: 2px solid #000000; box-shadow: 8px 8px 0px #000000;
+            border-radius: 32px; overflow: hidden;
         }
-
         .neo-card::before {
-            content: "";
-            position: absolute;
+            content: ""; position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255, 255, 255, 0.75); 
-            z-index: 0;
+            background: rgba(255, 255, 255, 0.75); z-index: 0;
         }
-
-        .neo-card-content {
-            position: relative;
-            z-index: 1;
-        }
-
+        .neo-card-content { position: relative; z-index: 1; }
         .neo-avatar {
             background-image: url("{% static 'feedback/logo.png' %}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-color: white;
+            background-size: cover; background-position: center;
+            background-repeat: no-repeat; background-color: white;
         }
-
-        .neo-input {
-            border: 2px solid #000000;
-            border-radius: 20px;
-            background: rgba(248, 249, 250, 0.9);
-        }
-
+        .neo-input { border: 2px solid #000000; border-radius: 20px; background: rgba(248, 249, 250, 0.9); }
         .neo-btn {
-            background-color: var(--accent);
-            border: 2px solid #000000;
-            box-shadow: 4px 4px 0px #000000;
-            border-radius: 22px;
-            color: white;
-            transition: all 0.2s;
-            text-transform: uppercase;
+            background-color: var(--accent); border: 2px solid #000000;
+            box-shadow: 4px 4px 0px #000000; border-radius: 22px;
+            color: white; transition: all 0.2s; text-transform: uppercase;
         }
-
         .neo-btn:active { box-shadow: 0px 0px 0px #000000; transform: translate(2px, 2px); }
         .neo-btn:disabled { opacity: 0.7; pointer-events: none; }
-
         .history-card {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid #000000;
-            box-shadow: 4px 4px 0px #000000;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            transition: transform 0.2s;
+            background: rgba(255, 255, 255, 0.1); border: 2px solid #000000;
+            box-shadow: 4px 4px 0px #000000; border-radius: 20px;
+            backdrop-filter: blur(10px); transition: transform 0.2s;
         }
-
         .custom-select-wrapper { position: relative; cursor: pointer; }
         .custom-select-trigger {
             display: flex; align-items: center; justify-content: space-between;
@@ -93,21 +58,12 @@
         .custom-options {
             position: absolute; top: calc(100% + 8px); left: 0; right: 0;
             background: white; border: 2px solid #000000; border-radius: 20px;
-            box-shadow: 6px 6px 0px #000000; z-index: 50;
-            display: none; overflow: hidden;
+            box-shadow: 6px 6px 0px #000000; z-index: 50; display: none; overflow: hidden;
         }
         .custom-options.show { display: block; animation: selectFadeIn 0.2s ease-out; }
-        .custom-option {
-            padding: 12px 20px; font-size: 0.75rem; font-weight: 700; color: #666;
-            transition: all 0.2s; border-bottom: 1px solid #eee;
-        }
+        .custom-option { padding: 12px 20px; font-size: 0.75rem; font-weight: 700; color: #666; transition: all 0.2s; border-bottom: 1px solid #eee; }
         .custom-option:hover { background: #f0f0f0; color: var(--accent); }
-        
-        @keyframes selectFadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        @keyframes selectFadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .indicator-loading { display: none; }
         .htmx-request .indicator-default { display: none; }
         .htmx-request .indicator-loading { display: flex; }
@@ -173,26 +129,19 @@
         {% if history %}
         <div class="space-y-4 pb-10 animate-in fade-in slide-in-from-bottom-5 duration-700">
             <h3 class="text-[10px] font-bold uppercase tracking-[3px] text-white/50 pl-2">Mening murojaatlarim</h3>
-            
             {% for item in history %}
             <div class="history-card p-5">
                 <div class="flex justify-between items-start mb-3">
-                    <span class="text-[9px] px-2 py-1 bg-[#ad88b9] text-white rounded-lg uppercase font-bold tracking-tighter border border-black shadow-[2px_2px_0px_#000000]">
-                        {{ item.category }}
-                    </span>
+                    <span class="text-[9px] px-2 py-1 bg-[#ad88b9] text-white rounded-lg uppercase font-bold tracking-tighter border border-black shadow-[2px_2px_0px_#000000]">{{ item.category }}</span>
                     <span class="text-[8px] text-white/40 uppercase font-bold">{{ item.created_at|date:"d.m.Y H:i" }}</span>
                 </div>
-                
                 <p class="text-white/90 text-xs font-medium leading-relaxed mb-4">{{ item.text }}</p>
-                
                 {% if item.reply_text %}
                 <div class="mt-3 pt-3 border-t border-black/20">
                     <div class="flex items-center space-x-2 mb-2">
                         <span class="text-[9px] font-bold uppercase text-[#ad88b9] tracking-widest">Admin javobi:</span>
                     </div>
-                    <div class="bg-white/10 p-3 rounded-xl border border-black/10 text-xs italic text-white/80">
-                        {{ item.reply_text }}
-                    </div>
+                    <div class="bg-white/10 p-3 rounded-xl border border-black/10 text-xs italic text-white/80">{{ item.reply_text }}</div>
                 </div>
                 {% else %}
                 <div class="flex items-center space-x-2 mt-2">
@@ -207,27 +156,30 @@
     </div>
 
     <script>
+        // 1. Инициализация Telegram
         const tg = window.Telegram.WebApp;
+        tg.ready(); // Сразу сообщаем, что готовы, чтобы убрать экран загрузки
         tg.expand();
-        tg.ready();
         tg.setHeaderColor('#0c0a14');
 
+        // 2. Логика селекта
         const selectWrapper = document.getElementById('custom-select');
         const optionsList = document.getElementById('select-options');
         const selectedText = document.getElementById('selected-text');
         const categoryInput = document.getElementById('category_input');
         const arrow = document.getElementById('select-arrow');
 
-        selectWrapper.addEventListener('click', (e) => {
-            optionsList.classList.toggle('show');
-            arrow.style.transform = optionsList.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
-        });
+        if (selectWrapper) {
+            selectWrapper.addEventListener('click', (e) => {
+                optionsList.classList.toggle('show');
+                arrow.style.transform = optionsList.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+            });
+        }
 
         document.querySelectorAll('.custom-option').forEach(option => {
             option.addEventListener('click', (e) => {
                 const val = e.target.getAttribute('data-value');
-                const text = e.target.innerText;
-                selectedText.innerText = text;
+                selectedText.innerText = e.target.innerText;
                 categoryInput.value = val;
                 optionsList.classList.remove('show');
                 arrow.style.transform = 'rotate(0deg)';
@@ -235,31 +187,34 @@
             });
         });
 
-        window.addEventListener('click', (e) => {
-            if (!selectWrapper.contains(e.target)) {
-                optionsList.classList.remove('show');
-                arrow.style.transform = 'rotate(0deg)';
-            }
-        });
-
-        function fillData() {
+        // 3. Заполнение данных и ПЕРЕЗАГРУЗКА ДЛЯ ИСТОРИИ
+        function initApp() {
             const user = tg.initDataUnsafe?.user;
-            if (user) {
-                document.getElementById('user_id').value = user.id || "";
+            if (user && user.id) {
+                // Заполняем скрытые поля
+                document.getElementById('user_id').value = user.id;
                 document.getElementById('username').value = user.username || "anonymous";
 
+                // Проверяем, есть ли уже id в URL, чтобы не было вечного цикла
                 const urlParams = new URLSearchParams(window.location.search);
                 if (!urlParams.has('user_id')) {
-                    window.location.search = `?user_id=${user.id}`;
+                    // Используем обратные кавычки для корректной подстановки!
+                    window.location.href = window.location.pathname + `?user_id=${user.id}`;
                 }
             }
         }
         
-        fillData();
+        initApp();
 
+        // 4. Обработка HTMX
         document.body.addEventListener('htmx:configRequest', (event) => { 
-            fillData();
-            document.querySelector('.neo-btn').disabled = true;
+            const user = tg.initDataUnsafe?.user;
+            if (user) {
+                event.detail.parameters['user_id'] = user.id;
+                event.detail.parameters['username'] = user.username || "anonymous";
+            }
+            const btn = document.querySelector('.neo-btn');
+            if (btn) btn.disabled = true;
         });
     </script>
 </body>
