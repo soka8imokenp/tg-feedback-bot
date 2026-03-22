@@ -11,24 +11,19 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = os.getenv("ADMIN_ID")
 
 def index(request):
-    # Пытаемся взять user_id из GET или POST
     user_id = request.GET.get('user_id') or request.POST.get('user_id')
     history = []
     has_more_tickets = False
     next_offset = 0
     
     if user_id:
-        # Получаем общее количество тикетов пользователя
         total_count = Application.objects.filter(user_id=user_id).count()
         
-        # ВАЖНО: берем limit из запроса. Если его нет (первый вход), ставим 5.
-        # Это позволит автообновлению не сбрасывать пагинацию.
+        # limit берется из запроса (для автообновления), по умолчанию 5
         limit = int(request.GET.get('limit', 5))
         
-        # Берем тикеты с учетом текущего лимита
         history = Application.objects.filter(user_id=user_id).order_by('is_closed', '-updated_at')[:limit]
         
-        # Проверяем, есть ли еще тикеты для подгрузки
         has_more_tickets = total_count > limit
         next_offset = limit
     
@@ -41,7 +36,9 @@ def index(request):
     return render(request, 'feedback/index.html', context)
 
 def load_more_tickets(request):
-    """Функция для подгрузки следующих 5 тикетов через HTMX"""
+    """
+    ВАЖНО: Эта функция возвращает ТОЛЬКО фрагмент с новыми карточками.
+    """
     user_id = request.GET.get('user_id')
     offset = int(request.GET.get('offset', 0))
     limit = 5
@@ -49,10 +46,9 @@ def load_more_tickets(request):
     if not user_id:
         return HttpResponse("")
 
-    # Получаем следующую порцию тикетов
+    # Получаем следующую порцию (например, с 5 по 10)
     history = Application.objects.filter(user_id=user_id).order_by('is_closed', '-updated_at')[offset:offset + limit]
     
-    # Считаем, остались ли еще тикеты
     total_count = Application.objects.filter(user_id=user_id).count()
     new_offset = offset + limit
     has_more_tickets = total_count > new_offset
@@ -64,7 +60,7 @@ def load_more_tickets(request):
         'has_more_tickets': has_more_tickets
     }
     
-    # Возвращаем фрагмент (partials/ticket_list.html)
+    # Мы рендерим специальный маленький шаблон, который содержит только карточки и новую кнопку
     return render(request, 'feedback/partials/ticket_list.html', context)
 
 def close_ticket(request, ticket_id):
@@ -76,7 +72,6 @@ def close_ticket(request, ticket_id):
     return HttpResponse("Metod xato", status=400)
 
 def reply_ticket(request, ticket_id):
-    """Добавление сообщения клиента в историю чата"""
     if request.method == 'POST':
         ticket = get_object_or_404(Application, id=ticket_id)
         new_reply = request.POST.get('new_reply')
@@ -88,9 +83,9 @@ def reply_ticket(request, ticket_id):
                 'time': timezone.now().strftime("%H:%M")
             }
             
-            history = list(ticket.chat_history)
-            history.append(message_obj)
-            ticket.chat_history = history
+            chat_history = list(ticket.chat_history)
+            chat_history.append(message_obj)
+            ticket.chat_history = chat_history
             
             ticket.updated_at = timezone.now()
             ticket.is_answered = False 
