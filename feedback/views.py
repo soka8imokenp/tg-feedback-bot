@@ -11,12 +11,12 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = os.getenv("ADMIN_ID")
 
 def index(request):
-    # Пытаемся взять user_id из GET или POST (для HTMX)
+    # Пытаемся взять user_id из GET или POST (важно для HTMX обновлений)
     user_id = request.GET.get('user_id') or request.POST.get('user_id')
     history = []
     
     if user_id:
-        # Сначала открытые, потом закрытые. Ограничим 5 последними.
+        # Сначала открытые, потом закрытые.
         history = Application.objects.filter(user_id=user_id).order_by('is_closed', '-updated_at')[:5]
     
     context = {
@@ -31,7 +31,7 @@ def close_ticket(request, ticket_id):
         ticket.is_closed = True
         ticket.save()
         
-        # После закрытия возвращаем обновленную страницу
+        # После закрытия вызываем index, он подтянет user_id из POST и вернет историю
         return index(request)
     return HttpResponse("Metod xato", status=400)
 
@@ -44,17 +44,16 @@ def reply_ticket(request, ticket_id):
         if new_reply and not ticket.is_closed:
             # Склеиваем старый текст с новым
             ticket.text += f"\n\n[Mijoz]: {new_reply}"
-            ticket.updated_at = timezone.now() # Обновляем дату, чтобы тикет поднялся выше
+            ticket.updated_at = timezone.now()
             ticket.save()
             
-            # Уведомляем админа о новом сообщении в старом тикете
+            # Уведомляем админа
             url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
             tg_message = (
                 f"💬 <b>#id{ticket.user_id} dan yangi xabar!</b>\n"
                 f"━━━━━━━━━━━━━━\n"
-                f"<b>Mavzu:</b> {ticket.category}\n"
                 f"<b>Xabar:</b> {new_reply}\n\n"
-                f"👉 <i>Javob berish uchun #id{ticket.user_id} ga Reply qiling</i>"
+                f"👉 <i>Javob uchun #id{ticket.user_id} ga Reply qiling</i>"
             )
             try:
                 requests.post(url, data={"chat_id": ADMIN_ID, "text": tg_message, "parse_mode": "HTML"}, timeout=5)
@@ -75,8 +74,9 @@ def submit_feedback(request):
             time_passed = timezone.now() - last_app.created_at
             if time_passed < timedelta(seconds=60):
                 wait_time = 60 - int(time_passed.total_seconds())
+                # Обертка id="form-container" ОБЯЗАТЕЛЬНА для HTMX
                 return HttpResponse(f'''
-                    <div class="flex flex-col items-center justify-center h-screen space-y-6 p-8 bg-[#0f0f12]">
+                    <div id="form-container" class="flex flex-col items-center justify-center h-screen space-y-6 p-8 bg-[#0c0a14]">
                         <script>window.Telegram.WebApp.HapticFeedback.notificationOccurred('warning');</script>
                         <div class="w-24 h-24 bg-yellow-500/10 border-2 border-yellow-500 rounded-full flex items-center justify-center">
                             <svg class="w-12 h-12 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,7 +93,6 @@ def submit_feedback(request):
         category = request.POST.get('category', 'other')
         text = request.POST.get('text')
 
-        # 1. Сохраняем в базу
         Application.objects.create(
             user_id=user_id,
             username=username,
@@ -101,7 +100,6 @@ def submit_feedback(request):
             text=text 
         )
 
-        # 2. Telegram xabari
         category_config = {
             'news': ('📢', 'YANGILIK'),
             'ads': ('💰', 'REKLAMA'),
@@ -121,16 +119,15 @@ def submit_feedback(request):
             f"#id{user_id}"
         )
 
-        # 3. Отправка админу
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
         try:
             requests.post(url, data={"chat_id": ADMIN_ID, "text": message, "parse_mode": "HTML"}, timeout=5)
         except Exception as e:
             print(f"Telegram error: {e}")
 
-        # 4. Success Screen
+        # Success Screen с оберткой id="form-container"
         return HttpResponse(f'''
-            <div class="flex flex-col items-center justify-center h-screen space-y-6 p-8 bg-[#0c0a14]">
+            <div id="form-container" class="flex flex-col items-center justify-center h-screen space-y-6 p-8 bg-[#0c0a14]">
                 <script>window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');</script>
                 <div class="w-24 h-24 bg-[#ad88b9]/20 border-2 border-[#ad88b9] rounded-full flex items-center justify-center animate-bounce">
                     <svg class="w-12 h-12 text-[#ad88b9]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
