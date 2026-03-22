@@ -10,34 +10,38 @@ from datetime import timedelta
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = os.getenv("ADMIN_ID")
 
-def index(request):
-    user_id = request.GET.get('user_id') or request.POST.get('user_id')
-    history = []
-    has_more_tickets = False
-    next_offset = 0
+def get_history_context(user_id, limit=5, offset=0):
+    """
+    Вспомогательная функция для получения истории и флагов пагинации.
+    """
+    total_count = Application.objects.filter(user_id=user_id).count()
+    # Сначала открытые, потом закрытые. Внутри групп - самые новые сверху.
+    history = Application.objects.filter(user_id=user_id).order_by('is_closed', '-updated_at')[offset:offset + limit]
     
-    if user_id:
-        total_count = Application.objects.filter(user_id=user_id).count()
-        
-        # limit берется из запроса (для автообновления), по умолчанию 5
-        limit = int(request.GET.get('limit', 5))
-        
-        history = Application.objects.filter(user_id=user_id).order_by('is_closed', '-updated_at')[:limit]
-        
-        has_more_tickets = total_count > limit
-        next_offset = limit
+    new_offset = offset + limit
+    has_more = total_count > new_offset
     
-    context = {
+    return {
         'history': history,
         'user_id': user_id,
-        'has_more_tickets': has_more_tickets,
-        'next_offset': next_offset
+        'next_offset': new_offset,
+        'has_more_tickets': has_more
     }
+
+def index(request):
+    user_id = request.GET.get('user_id') or request.POST.get('user_id')
+    context = {'user_id': user_id}
+    
+    if user_id:
+        limit = int(request.GET.get('limit', 5))
+        history_data = get_history_context(user_id, limit=limit)
+        context.update(history_data)
+    
     return render(request, 'feedback/index.html', context)
 
 def load_more_tickets(request):
     """
-    ВАЖНО: Эта функция возвращает ТОЛЬКО фрагмент с новыми карточками.
+    Возвращает только блок с дополнительными старыми тикетами.
     """
     user_id = request.GET.get('user_id')
     offset = int(request.GET.get('offset', 0))
@@ -46,21 +50,9 @@ def load_more_tickets(request):
     if not user_id:
         return HttpResponse("")
 
-    # Получаем следующую порцию (например, с 5 по 10)
-    history = Application.objects.filter(user_id=user_id).order_by('is_closed', '-updated_at')[offset:offset + limit]
+    context = get_history_context(user_id, limit=limit, offset=offset)
     
-    total_count = Application.objects.filter(user_id=user_id).count()
-    new_offset = offset + limit
-    has_more_tickets = total_count > new_offset
-    
-    context = {
-        'history': history,
-        'user_id': user_id,
-        'next_offset': new_offset,
-        'has_more_tickets': has_more_tickets
-    }
-    
-    # Мы рендерим специальный маленький шаблон, который содержит только карточки и новую кнопку
+    # Используем partial-шаблон (в нем только цикл for по history и кнопка Yana yuklash)
     return render(request, 'feedback/partials/ticket_list.html', context)
 
 def close_ticket(request, ticket_id):
@@ -68,7 +60,11 @@ def close_ticket(request, ticket_id):
         ticket = get_object_or_404(Application, id=ticket_id)
         ticket.is_closed = True
         ticket.save()
-        return index(request)
+        
+        # После закрытия возвращаем обновленный список тикетов для пользователя
+        user_id = request.POST.get('user_id') or ticket.user_id
+        context = get_history_context(user_id)
+        return render(request, 'feedback/index.html', context)
     return HttpResponse("Metod xato", status=400)
 
 def reply_ticket(request, ticket_id):
@@ -91,6 +87,7 @@ def reply_ticket(request, ticket_id):
             ticket.is_answered = False 
             ticket.save()
             
+            # Отправка в Telegram
             url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
             tg_message = (
                 f"💬 <b>#id{ticket.user_id} dan yangi xabar!</b>\n"
@@ -104,13 +101,16 @@ def reply_ticket(request, ticket_id):
             except:
                 pass
                 
-        return index(request)
+        user_id = request.POST.get('user_id') or ticket.user_id
+        context = get_history_context(user_id)
+        return render(request, 'feedback/index.html', context)
     return HttpResponse("Metod xato", status=400)
 
 def submit_feedback(request):
     if request.method == 'POST':
         user_id = request.POST.get('user_id', 'Unknown')
         
+        # Анти-спам проверка
         last_app = Application.objects.filter(user_id=user_id).order_by('-created_at').first()
         if last_app:
             time_passed = timezone.now() - last_app.created_at
@@ -149,6 +149,7 @@ def submit_feedback(request):
             chat_history=initial_history
         )
 
+        # Конфиг для уведомления в ТГ
         category_config = {
             'news': ('📢', 'YANGILIK'),
             'ads': ('💰', 'REKLAMA'),
@@ -175,6 +176,7 @@ def submit_feedback(request):
         except Exception as e:
             print(f"Telegram error: {e}")
 
+        # Ответ об успехе
         return HttpResponse(f'''
             <div id="form-container" class="flex flex-col items-center justify-center h-screen space-y-6 p-8 bg-[#0c0a14]">
                 <script>window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');</script>

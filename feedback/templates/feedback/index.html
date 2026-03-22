@@ -128,7 +128,7 @@
                     </div>
 
                     <div class="space-y-1">
-                        <label class="block text-[9px] font-bold ml-2 text-gray-00 uppercase tracking-widest">Mavzu (maks. 20 ta belgi)</label>
+                        <label class="block text-[9px] font-bold ml-2 text-gray-500 uppercase tracking-widest">Mavzu</label>
                         <input type="text" name="subject" maxlength="20" placeholder="Qisqacha mavzu..." required 
                             class="neo-input w-full px-4 py-3 bg-white/90 text-black text-xs font-bold focus:outline-none">
                     </div>
@@ -148,18 +148,11 @@
         {% endif %}
 
         {% if history %}
-        <div id="history-list-container" 
-             hx-get="{% url 'feedback_index' %}" 
-             hx-trigger="every 7s" 
-             hx-select="#history-list-container" 
-             hx-swap="outerHTML"
-             hx-vals='js:{limit: document.querySelectorAll(".history-card").length, user_id: "{{ user_id }}"}'
-             class="space-y-4 pb-10">
-            
+        <div id="history-list-container" class="space-y-4 pb-10">
             <h3 class="text-[10px] font-bold uppercase tracking-[3px] text-white/50 pl-2">Mening murojaatlarim</h3>
             
             {% for item in history %}
-            <div class="history-card overflow-hidden mb-4" data-ticket-id="{{ item.id }}">
+            <div class="history-card overflow-hidden" data-ticket-id="{{ item.id }}">
                 <div class="p-5 cursor-pointer" onclick="toggleCard(this)">
                     <div class="flex justify-between items-start mb-3">
                         <span class="text-[8px] px-2 py-1 bg-[#ad88b9] text-white rounded-lg uppercase font-bold border border-black shadow-[2px_2px_0px_#000000]">{{ item.get_category_display }}</span>
@@ -235,17 +228,10 @@
             document.querySelectorAll('.local-time, .local-time-msg').forEach(el => {
                 let utcStr = el.getAttribute('data-utc');
                 if (!utcStr) return;
-
-                if (utcStr.length === 5 && utcStr.includes(':')) {
-                    const now = new Date();
-                    utcStr = `${now.toISOString().split('T')[0]}T${utcStr}:00Z`;
-                }
-
                 const date = new Date(utcStr);
                 if (!isNaN(date)) {
                     const hours = date.getHours().toString().padStart(2, '0');
                     const minutes = date.getMinutes().toString().padStart(2, '0');
-                    
                     if (el.classList.contains('local-time')) {
                         const day = date.getDate().toString().padStart(2, '0');
                         const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -264,7 +250,6 @@
                 const uName = user.username || "anonymous";
                 if (document.getElementById('user_id_input')) document.getElementById('user_id_input').value = uId;
                 if (document.getElementById('username_input')) document.getElementById('username_input').value = uName;
-
                 const urlParams = new URLSearchParams(window.location.search);
                 if (!urlParams.has('user_id')) {
                     window.location.replace(window.location.pathname + `?user_id=${uId}`);
@@ -280,7 +265,6 @@
                     optionsList.classList.toggle('show');
                     if(arrow) arrow.style.transform = optionsList.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
                 };
-
                 document.querySelectorAll('.custom-option').forEach(option => {
                     option.onclick = (e) => {
                         document.getElementById('selected-text').innerText = e.target.innerText;
@@ -299,7 +283,6 @@
                     card.querySelector('.preview-text').classList.add('hidden');
                 }
             }
-            
             updateAllTimes();
         }
 
@@ -318,7 +301,6 @@
             const ticketId = card.getAttribute('data-ticket-id');
             const content = card.querySelector('.expanded-content');
             const preview = card.querySelector('.preview-text');
-            
             const isOpening = content.classList.contains('hidden');
             
             content.classList.toggle('hidden');
