@@ -47,7 +47,6 @@
             backdrop-filter: blur(10px);
         }
 
-        /* --- СТИЛИ ВЫПАДАЮЩЕГО МЕНЮ --- */
         .custom-options { 
             display: none; position: absolute; top: 100%; left: 0; right: 0; 
             background: white; border: 2px solid #000; border-radius: 20px; z-index: 50; 
@@ -55,13 +54,8 @@
         }
         .custom-options.show { display: block; }
         .custom-option { transition: all 0.2s ease; cursor: pointer; color: black; }
-        
-        .custom-option:hover {
-            background-color: #eeeeee !important; 
-            color: var(--accent) !important;
-        }
+        .custom-option:hover { background-color: #eeeeee !important; color: var(--accent) !important; }
 
-        /* --- СТИЛИ СТАТУСОВ --- */
         @keyframes pulse-green {
             0% { box-shadow: 0 0 0 0px rgba(34, 197, 94, 0.7); }
             70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
@@ -154,10 +148,17 @@
         {% endif %}
 
         {% if history %}
-        <div class="space-y-4 pb-10">
+        <div id="history-list-container" 
+             hx-get="{% url 'feedback_index' %}?user_id={{ user_id }}" 
+             hx-trigger="every 7s" 
+             hx-select="#history-list-container" 
+             hx-swap="outerHTML"
+             class="space-y-4 pb-10">
+            
             <h3 class="text-[10px] font-bold uppercase tracking-[3px] text-white/50 pl-2">Mening murojaatlarim</h3>
+            
             {% for item in history %}
-            <div class="history-card overflow-hidden">
+            <div class="history-card overflow-hidden" data-ticket-id="{{ item.id }}">
                 <div class="p-5 cursor-pointer" onclick="toggleCard(this)">
                     <div class="flex justify-between items-start mb-3">
                         <span class="text-[8px] px-2 py-1 bg-[#ad88b9] text-white rounded-lg uppercase font-bold border border-black shadow-[2px_2px_0px_#000000]">{{ item.get_category_display }}</span>
@@ -224,7 +225,7 @@
                 Yana yuklash
             </button>
             {% endif %}
-            </div>
+        </div>
         {% endif %}
     </div>
 
@@ -233,6 +234,9 @@
         tg.ready();
         tg.expand();
         tg.setHeaderColor('#0c0a14');
+
+        // Переменная для хранения ID открытого тикета
+        let activeTicketId = null;
 
         function updateAllTimes() {
             document.querySelectorAll('.local-time, .local-time-msg').forEach(el => {
@@ -294,24 +298,53 @@
                     };
                 });
             }
+            
+            // Если до обновления был открыт тикет, восстанавливаем его
+            if (activeTicketId) {
+                const card = document.querySelector(`.history-card[data-ticket-id="${activeTicketId}"]`);
+                if (card) {
+                    card.querySelector('.expanded-content').classList.remove('hidden');
+                    card.querySelector('.preview-text').classList.add('hidden');
+                }
+            }
+            
             updateAllTimes();
         }
 
         setupLogic();
 
-        document.body.addEventListener('htmx:afterSettle', () => {
+        // Обработка событий HTMX для сохранения состояния скролла и открытых окон
+        document.body.addEventListener('htmx:afterSettle', (evt) => {
             setupLogic();
+            // Скроллим чат вниз если он открыт
+            if (activeTicketId) {
+                const activeChat = document.querySelector(`.history-card[data-ticket-id="${activeTicketId}"] .chat-container`);
+                if (activeChat) activeChat.scrollTop = activeChat.scrollHeight;
+            }
         });
 
         window.toggleCard = function(element) {
             const card = element.closest('.history-card');
+            const ticketId = card.getAttribute('data-ticket-id');
             const content = card.querySelector('.expanded-content');
             const preview = card.querySelector('.preview-text');
+            
+            const isOpening = content.classList.contains('hidden');
+            
+            // Закрываем все остальные (опционально, если хотим только один открытый)
+            // document.querySelectorAll('.expanded-content').forEach(el => el.classList.add('hidden'));
+            // document.querySelectorAll('.preview-text').forEach(el => el.classList.remove('hidden'));
+
             content.classList.toggle('hidden');
             preview.classList.toggle('hidden');
-            if(!content.classList.contains('hidden')) {
+            
+            if(isOpening) {
+                activeTicketId = ticketId;
                 const container = content.querySelector('.chat-container');
                 if(container) container.scrollTop = container.scrollHeight;
+                tg.HapticFeedback.impactOccurred('light');
+            } else {
+                activeTicketId = null;
             }
         };
     </script>
