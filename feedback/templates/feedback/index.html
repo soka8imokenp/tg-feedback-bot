@@ -21,7 +21,6 @@
             color: white;
         }
         
-        /* Neo-Brutalism Cards */
         .neo-card {
             position: relative;
             background-image: url("{% static 'feedback/kawaii.png' %}");
@@ -59,13 +58,6 @@
             backdrop-filter: blur(10px); transition: all 0.3s ease;
         }
 
-        /* Animations */
-        @keyframes zoom-in {
-            from { opacity: 0; transform: scale(0.95) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        .animate-in { animation: zoom-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-        
         .custom-select-wrapper { position: relative; cursor: pointer; }
         .custom-select-trigger {
             display: flex; align-items: center; justify-content: space-between;
@@ -76,15 +68,15 @@
             background: white; border: 2px solid #000000; border-radius: 20px;
             box-shadow: 6px 6px 0px #000000; z-index: 50; display: none; overflow: hidden;
         }
-        .custom-options.show { display: block; animation: selectFadeIn 0.2s ease-out; }
-        .custom-option { padding: 12px 20px; font-size: 0.75rem; font-weight: 700; color: #666; transition: all 0.2s; border-bottom: 1px solid #eee; }
-        .custom-option:hover { background: #f0f0f0; color: var(--accent); }
-        
-        @keyframes selectFadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .custom-options.show { display: block; }
+        .custom-option { padding: 12px 20px; font-size: 0.75rem; font-weight: 700; color: #666; border-bottom: 1px solid #eee; }
         
         .indicator-loading { display: none; }
         .htmx-request .indicator-default { display: none; }
         .htmx-request .indicator-loading { display: flex; }
+        
+        /* Чтобы переносы строк в тексте отображались корректно */
+        .preserve-lines { white-space: pre-wrap; }
     </style>
 </head>
 <body class="p-4">
@@ -99,7 +91,7 @@
                     <div class="w-10 h-10 rounded-full border-2 border-black neo-avatar shadow-[3px_3px_0px_#000000]"></div>
                 </div>
                 
-                <form id="feedback-form" hx-post="{% url 'submit_feedback' %}" hx-target="#form-container" hx-swap="innerHTML transition:true" class="space-y-6">
+                <form id="feedback-form" hx-post="{% url 'submit_feedback' %}" hx-target="#form-container" hx-select="#form-container" class="space-y-6">
                     {% csrf_token %}
                     <input type="hidden" name="user_id" id="user_id">
                     <input type="hidden" name="username" id="username">
@@ -126,13 +118,13 @@
 
                     <div class="space-y-2">
                         <label class="block text-[10px] font-bold ml-2 text-gray-500 uppercase tracking-widest">Xabar matni</label>
-                        <textarea name="text" placeholder="Fikringizni yozing..." required 
+                        <textarea name="text" placeholder="Yangi murojaat yozing..." required 
                             class="neo-input w-full p-4 bg-gray-50/50 text-black h-36 resize-none focus:outline-none text-sm font-bold"></textarea>
                     </div>
 
                     <button type="submit" id="submit-btn" class="neo-btn w-full py-5 font-bold text-sm flex items-center justify-center">
-                        <span class="indicator-default">Yuborish</span>
-                        <div class="indicator-loading items-center space-x-2">
+                        <span class="indicator-default text-white">Yuborish</span>
+                        <div class="indicator-loading items-center space-x-2 text-white">
                             <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -145,7 +137,7 @@
         </div>
 
         {% if history %}
-        <div class="space-y-4 pb-10 animate-in fade-in slide-in-from-bottom-5 duration-700">
+        <div class="space-y-4 pb-10">
             <h3 class="text-[10px] font-bold uppercase tracking-[3px] text-white/50 pl-2">Mening murojaatlarim</h3>
             
             {% for item in history %}
@@ -156,18 +148,17 @@
                         <span class="text-[9px] px-2 py-1 bg-[#ad88b9] text-white rounded-lg uppercase font-bold tracking-tighter border border-black shadow-[2px_2px_0px_#000000]">{{ item.category }}</span>
                         <span class="text-[8px] text-white/40 uppercase font-bold">{{ item.created_at|date:"d.m.Y H:i" }}</span>
                     </div>
-                    <p class="preview-text text-white/90 text-xs font-medium leading-relaxed truncate">
-                        {{ item.text }}
-                    </p>
+                    <p class="preview-text text-white/90 text-xs font-medium leading-relaxed truncate preserve-lines">{{ item.text }}</p>
                     <div class="flex justify-center mt-2 opacity-30">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </div>
                 </div>
 
                 <div class="expanded-content hidden px-5 pb-5 border-t border-white/10 pt-4">
+                    
                     <div class="mb-4">
-                        <span class="text-[8px] font-bold uppercase text-white/40 tracking-widest block mb-1">Xabar to'liq:</span>
-                        <p class="text-white/90 text-xs font-medium leading-relaxed">{{ item.text }}</p>
+                        <span class="text-[8px] font-bold uppercase text-white/40 tracking-widest block mb-2">Muloqot tarixi:</span>
+                        <p class="text-white/90 text-xs font-medium leading-relaxed preserve-lines">{{ item.text }}</p>
                     </div>
                     
                     {% if item.reply_text %} 
@@ -175,7 +166,7 @@
                         <div class="flex items-center space-x-2 mb-2">
                             <span class="text-[9px] font-bold uppercase text-[#ad88b9] tracking-widest">Admin javobi:</span>
                         </div>
-                        <div class="bg-white/10 p-3 rounded-xl border border-black/10 text-xs italic text-white/80">
+                        <div class="bg-white/10 p-3 rounded-xl border border-black/10 text-xs italic text-white/80 preserve-lines">
                             {{ item.reply_text }}
                         </div>
                     </div>
@@ -186,22 +177,32 @@
                     </div>
                     {% endif %}
 
-                    <div class="flex justify-between items-center border-t border-white/10 pt-4">
-                        {% if not item.is_closed %}
+                    {% if not item.is_closed %}
+                        <form hx-post="{% url 'reply_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" class="mt-4 flex items-center space-x-2 border-t border-white/10 pt-4 mb-4">
+                            {% csrf_token %}
+                            <input type="text" name="new_reply" placeholder="Xabar yozish..." required class="neo-input flex-1 px-3 py-2 text-[10px] h-10 font-bold focus:outline-none placeholder-gray-500 bg-white/90">
+                            <button type="submit" class="w-10 h-10 flex-shrink-0 bg-[#ad88b9] text-white rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center">
+                                <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                            </button>
+                        </form>
+
+                        <div class="flex justify-between items-center border-t border-white/10 pt-4">
                             <div class="flex items-center space-x-2">
                                 <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#22c55e]"></div>
                                 <span class="text-[9px] font-bold uppercase text-green-500 tracking-widest">Ochiq</span>
                             </div>
-                            
                             <button hx-post="{% url 'close_ticket' item.id %}" 
                                     hx-target="#form-container"
+                                    hx-select="#form-container"
                                     class="text-[9px] font-bold bg-[#ad88b9] text-white px-3 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] active:translate-y-0.5 active:shadow-none transition-all uppercase tracking-wider">
                                 Masalani yopish
                             </button>
-                        {% else %}
+                        </div>
+                    {% else %}
+                        <div class="flex justify-between items-center border-t border-white/10 pt-4">
                             <span class="text-[9px] font-bold uppercase text-gray-500 tracking-widest">✅ Yopilgan</span>
-                        {% endif %}
-                    </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -215,7 +216,7 @@
         tg.expand();
         tg.setHeaderColor('#0c0a14');
 
-        // Logic Select
+        // Логика Select
         const selectWrapper = document.getElementById('custom-select');
         const optionsList = document.getElementById('select-options');
         const selectedText = document.getElementById('selected-text');
@@ -232,9 +233,8 @@
 
         document.querySelectorAll('.custom-option').forEach(option => {
             option.addEventListener('click', (e) => {
-                const val = e.target.getAttribute('data-value');
                 selectedText.innerText = e.target.innerText;
-                categoryInput.value = val;
+                categoryInput.value = e.target.getAttribute('data-value');
                 optionsList.classList.remove('show');
                 if(arrow) arrow.style.transform = 'rotate(0deg)';
                 tg.HapticFeedback.selectionChanged();
@@ -242,7 +242,7 @@
             });
         });
 
-        // Аккордеон: функция открытия/закрытия карточки
+        // Аккордеон
         window.toggleCard = function(element) {
             const card = element.closest('.history-card');
             const content = card.querySelector('.expanded-content');
@@ -250,37 +250,37 @@
             
             if (content.classList.contains('hidden')) {
                 content.classList.remove('hidden');
-                preview.classList.add('hidden'); // прячем обрезанный текст
+                preview.classList.add('hidden');
             } else {
                 content.classList.add('hidden');
-                preview.classList.remove('hidden'); // показываем обрезанный текст
+                preview.classList.remove('hidden');
             }
-            tg.HapticFeedback.impactOccurred('light'); // приятная вибрация при открытии
+            tg.HapticFeedback.impactOccurred('light'); 
         };
 
-        // App Init
+        // Инициализация
         function initApp() {
             const user = tg.initDataUnsafe?.user;
             if (user && user.id) {
-                const uId = document.getElementById('user_id');
-                const uName = document.getElementById('username');
-                if(uId) uId.value = user.id;
-                if(uName) uName.value = user.username || "anonymous";
+                if(document.getElementById('user_id')) document.getElementById('user_id').value = user.id;
+                if(document.getElementById('username')) document.getElementById('username').value = user.username || "anonymous";
 
                 const urlParams = new URLSearchParams(window.location.search);
                 if (!urlParams.has('user_id')) {
-                    const newUrl = window.location.pathname + `?user_id=${user.id}`;
-                    window.location.replace(newUrl);
+                    window.location.replace(window.location.pathname + `?user_id=${user.id}`);
                 }
             }
         }
         initApp();
 
-        // HTMX Handling with Haptics
+        // HTMX Обработка с вибрацией (ИСПРАВЛЕН БАГ С КНОПКАМИ)
         document.body.addEventListener('htmx:configRequest', (event) => { 
-            tg.HapticFeedback.impactOccurred('medium'); 
-            const btn = document.querySelector('#submit-btn');
-            if (btn) btn.disabled = true;
+            tg.HapticFeedback.impactOccurred('medium');
+            // Блокируем кнопку ТОЛЬКО если запрос идет из главной формы
+            if (event.detail.elt.id === 'feedback-form') {
+                const btn = document.querySelector('#submit-btn');
+                if (btn) btn.disabled = true;
+            }
         });
 
         document.body.addEventListener('htmx:afterRequest', (event) => {
@@ -288,9 +288,9 @@
                 tg.HapticFeedback.notificationOccurred('success'); 
             } else {
                 tg.HapticFeedback.notificationOccurred('error'); 
-                const btn = document.querySelector('#submit-btn');
-                if (btn) btn.disabled = false;
             }
+            const btn = document.querySelector('#submit-btn');
+            if (btn) btn.disabled = false;
         });
     </script>
 </body>

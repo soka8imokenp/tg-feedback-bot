@@ -10,4 +10,7 @@ urlpatterns = [
     
     # СТИЛЬ STEAM: Закрытие тикета (обработка нажатия кнопки "Masalani yopish")
     path('close/<int:ticket_id>/', views.close_ticket, name='close_ticket'),
+
+    # НОВОЕ: Ответ в существующий диалог (чат внутри карточки)
+    path('reply/<int:ticket_id>/', views.reply_ticket, name='reply_ticket'),
 ]

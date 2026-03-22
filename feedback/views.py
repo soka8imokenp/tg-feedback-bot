@@ -11,12 +11,12 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = os.getenv("ADMIN_ID")
 
 def index(request):
-    # URL'dan user_id ni olamiz
-    user_id = request.GET.get('user_id')
+    # Пытаемся взять user_id из GET или POST (для HTMX)
+    user_id = request.GET.get('user_id') or request.POST.get('user_id')
     history = []
     
     if user_id:
-        # Steam Style: Сначала открытые, потом закрытые. Ограничим 5 последними.
+        # Сначала открытые, потом закрытые. Ограничим 5 последними.
         history = Application.objects.filter(user_id=user_id).order_by('is_closed', '-updated_at')[:5]
     
     context = {
@@ -27,13 +27,40 @@ def index(request):
 
 def close_ticket(request, ticket_id):
     if request.method == 'POST':
-        # Находим тикет и закрываем его
         ticket = get_object_or_404(Application, id=ticket_id)
         ticket.is_closed = True
         ticket.save()
         
-        # Вибрация в Telegram при закрытии
-        # Возвращаем обновленный список через вызов index
+        # После закрытия возвращаем обновленную страницу
+        return index(request)
+    return HttpResponse("Metod xato", status=400)
+
+def reply_ticket(request, ticket_id):
+    """Добавление сообщения клиента в существующий диалог"""
+    if request.method == 'POST':
+        ticket = get_object_or_404(Application, id=ticket_id)
+        new_reply = request.POST.get('new_reply')
+        
+        if new_reply and not ticket.is_closed:
+            # Склеиваем старый текст с новым
+            ticket.text += f"\n\n[Mijoz]: {new_reply}"
+            ticket.updated_at = timezone.now() # Обновляем дату, чтобы тикет поднялся выше
+            ticket.save()
+            
+            # Уведомляем админа о новом сообщении в старом тикете
+            url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+            tg_message = (
+                f"💬 <b>#id{ticket.user_id} dan yangi xabar!</b>\n"
+                f"━━━━━━━━━━━━━━\n"
+                f"<b>Mavzu:</b> {ticket.category}\n"
+                f"<b>Xabar:</b> {new_reply}\n\n"
+                f"👉 <i>Javob berish uchun #id{ticket.user_id} ga Reply qiling</i>"
+            )
+            try:
+                requests.post(url, data={"chat_id": ADMIN_ID, "text": tg_message, "parse_mode": "HTML"}, timeout=5)
+            except:
+                pass
+                
         return index(request)
     return HttpResponse("Metod xato", status=400)
 
