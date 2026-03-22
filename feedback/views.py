@@ -41,7 +41,7 @@ def index(request):
 
 def load_more_tickets(request):
     """
-    Возвращает только новые блоки тикетов.
+    Возвращает только блок с дополнительными старыми тикетами.
     """
     user_id = request.GET.get('user_id')
     offset = int(request.GET.get('offset', 0))
@@ -51,7 +51,8 @@ def load_more_tickets(request):
         return HttpResponse("")
 
     context = get_history_context(user_id, limit=limit, offset=offset)
-    # Используем partial-шаблон
+    
+    # Используем partial-шаблон (в нем только цикл for по history и кнопка Yana yuklash)
     return render(request, 'feedback/partials/ticket_list.html', context)
 
 def close_ticket(request, ticket_id):
@@ -60,10 +61,9 @@ def close_ticket(request, ticket_id):
         ticket.is_closed = True
         ticket.save()
         
+        # После закрытия возвращаем обновленный список тикетов для пользователя
         user_id = request.POST.get('user_id') or ticket.user_id
         context = get_history_context(user_id)
-        # ВАЖНО: Возвращаем index.html, но HTMX сам вырежет нужный блок #form-container 
-        # благодаря hx-select в шаблоне. Но для чистоты можно использовать тот же index.
         return render(request, 'feedback/index.html', context)
     return HttpResponse("Metod xato", status=400)
 
@@ -103,7 +103,6 @@ def reply_ticket(request, ticket_id):
                 
         user_id = request.POST.get('user_id') or ticket.user_id
         context = get_history_context(user_id)
-        # Возвращаем обновленный вид
         return render(request, 'feedback/index.html', context)
     return HttpResponse("Metod xato", status=400)
 
@@ -117,7 +116,6 @@ def submit_feedback(request):
             time_passed = timezone.now() - last_app.created_at
             if time_passed < timedelta(seconds=60):
                 wait_time = 60 - int(time_passed.total_seconds())
-                # Используем f-строку с правильным экранированием
                 return HttpResponse(f'''
                     <div id="form-container" class="flex flex-col items-center justify-center h-screen space-y-6 p-8 bg-[#0c0a14]">
                         <script>window.Telegram.WebApp.HapticFeedback.notificationOccurred('warning');</script>
@@ -178,6 +176,7 @@ def submit_feedback(request):
         except Exception as e:
             print(f"Telegram error: {e}")
 
+        # Ответ об успехе
         return HttpResponse(f'''
             <div id="form-container" class="flex flex-col items-center justify-center h-screen space-y-6 p-8 bg-[#0c0a14]">
                 <script>window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');</script>
