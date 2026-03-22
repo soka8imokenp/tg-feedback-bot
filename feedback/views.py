@@ -21,8 +21,11 @@ def index(request):
         # Получаем общее количество тикетов пользователя
         total_count = Application.objects.filter(user_id=user_id).count()
         
-        # Берем первые 5 тикетов (сначала открытые, потом закрытые)
-        limit = 5
+        # ВАЖНО: берем limit из запроса. Если его нет (первый вход), ставим 5.
+        # Это позволит автообновлению не сбрасывать пагинацию.
+        limit = int(request.GET.get('limit', 5))
+        
+        # Берем тикеты с учетом текущего лимита
         history = Application.objects.filter(user_id=user_id).order_by('is_closed', '-updated_at')[:limit]
         
         # Проверяем, есть ли еще тикеты для подгрузки
@@ -51,17 +54,17 @@ def load_more_tickets(request):
     
     # Считаем, остались ли еще тикеты
     total_count = Application.objects.filter(user_id=user_id).count()
-    has_more_tickets = total_count > (offset + limit)
+    new_offset = offset + limit
+    has_more_tickets = total_count > new_offset
     
     context = {
         'history': history,
         'user_id': user_id,
-        'next_offset': offset + limit,
+        'next_offset': new_offset,
         'has_more_tickets': has_more_tickets
     }
     
-    # Возвращаем специальный мини-шаблон (создайте этот файл в templates/feedback/partials/ticket_list.html)
-    # Если файла нет, можно временно возвращать тот же index.html, но лучше создать фрагмент.
+    # Возвращаем фрагмент (partials/ticket_list.html)
     return render(request, 'feedback/partials/ticket_list.html', context)
 
 def close_ticket(request, ticket_id):
@@ -177,7 +180,6 @@ def submit_feedback(request):
         except Exception as e:
             print(f"Telegram error: {e}")
 
-        # Success Screen (обновленная кнопка "Qaytish")
         return HttpResponse(f'''
             <div id="form-container" class="flex flex-col items-center justify-center h-screen space-y-6 p-8 bg-[#0c0a14]">
                 <script>window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');</script>

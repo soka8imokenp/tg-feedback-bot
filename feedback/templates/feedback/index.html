@@ -149,10 +149,11 @@
 
         {% if history %}
         <div id="history-list-container" 
-             hx-get="{% url 'feedback_index' %}?user_id={{ user_id }}" 
+             hx-get="{% url 'feedback_index' %}" 
              hx-trigger="every 7s" 
              hx-select="#history-list-container" 
              hx-swap="outerHTML"
+             hx-vals='js:{limit: document.querySelectorAll(".history-card").length, user_id: "{{ user_id }}"}'
              class="space-y-4 pb-10">
             
             <h3 class="text-[10px] font-bold uppercase tracking-[3px] text-white/50 pl-2">Mening murojaatlarim</h3>
@@ -235,7 +236,6 @@
         tg.expand();
         tg.setHeaderColor('#0c0a14');
 
-        // Переменная для хранения ID открытого тикета
         let activeTicketId = null;
 
         function updateAllTimes() {
@@ -299,7 +299,6 @@
                 });
             }
             
-            // Если до обновления был открыт тикет, восстанавливаем его
             if (activeTicketId) {
                 const card = document.querySelector(`.history-card[data-ticket-id="${activeTicketId}"]`);
                 if (card) {
@@ -313,10 +312,8 @@
 
         setupLogic();
 
-        // Обработка событий HTMX для сохранения состояния скролла и открытых окон
         document.body.addEventListener('htmx:afterSettle', (evt) => {
             setupLogic();
-            // Скроллим чат вниз если он открыт
             if (activeTicketId) {
                 const activeChat = document.querySelector(`.history-card[data-ticket-id="${activeTicketId}"] .chat-container`);
                 if (activeChat) activeChat.scrollTop = activeChat.scrollHeight;
@@ -331,10 +328,6 @@
             
             const isOpening = content.classList.contains('hidden');
             
-            // Закрываем все остальные (опционально, если хотим только один открытый)
-            // document.querySelectorAll('.expanded-content').forEach(el => el.classList.add('hidden'));
-            // document.querySelectorAll('.preview-text').forEach(el => el.classList.remove('hidden'));
-
             content.classList.toggle('hidden');
             preview.classList.toggle('hidden');
             
