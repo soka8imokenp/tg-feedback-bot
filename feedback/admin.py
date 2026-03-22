@@ -1,55 +1,63 @@
-import os
-import requests
 from django.contrib import admin
+from django import forms
+from django.utils import timezone
 from .models import Application
 
-@admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
-    # Поля, которые видны в списке заявок
-    # Добавил 'reply_text', чтобы ты видел ответ прямо в таблице
-    list_display = ('username', 'category', 'created_at', 'is_answered')
-    list_filter = ('category', 'created_at')
+    # Что отображать в списке всех заявок
+    list_display = ('subject', 'username', 'category', 'is_answered', 'is_closed', 'created_at')
+    list_filter = ('is_closed', 'category', 'is_answered')
     
-    # Метод для отображения иконки (галочки) в списке
-    def is_answered(self, obj):
-        # Проверяем именно поле reply_text
-        return bool(obj.reply_text)
+    # Поля, которые нельзя редактировать вручную (чтобы не сломать JSON)
+    readonly_fields = ('chat_history', 'created_at', 'updated_at')
     
-    is_answered.boolean = True
-    is_answered.short_description = "Javob berildi"
+    # Добавляем свое поле для ответа прямо в форму редактирования
+    fieldsets = (
+        ('Ma\'lumotlar', {
+            'fields': ('user_id', 'username', 'category', 'subject', 'is_closed', 'is_answered')
+        }),
+        ('Chat tarixi', {
+            'fields': ('chat_history',),
+        }),
+        ('Javob berish', {
+            'fields': ('admin_reply_field',),
+            'description': 'Bu yerga yozilgan xabar mijozga chatga boradi.',
+        }),
+    )
 
+    # Создаем виртуальное поле для ввода текста
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        form.base_fields['admin_reply_field'] = forms.CharField(
+            widget=forms.Textarea(attrs={'rows': 4, 'style': 'width: 100%;'}),
+            required=False,
+            label="Admin javobi"
+        )
+        return form
+
+    # Логика сохранения ответа
     def save_model(self, request, obj, form, change):
-        # 1. Сначала сохраняем данные в базу (Django запишет reply_text)
+        reply_text = form.cleaned_data.get('admin_reply_field')
+        
+        if reply_text:
+            # Формируем объект сообщения
+            new_message = {
+                'role': 'admin',
+                'text': reply_text,
+                'time': timezone.now().strftime("%H:%M")
+            }
+            
+            # Добавляем в JSON историю
+            history = list(obj.chat_history)
+            history.append(new_message)
+            obj.chat_history = history
+            
+            # Ставим отметку, что ответ дан
+            obj.is_answered = True
+            
+            # ТУТ МОЖНО ДОБАВИТЬ ОТПРАВКУ В ТЕЛЕГРАМ ПОЛЬЗОВАТЕЛЮ, ЕСЛИ НУЖНО
+            # (вызов функции отправки сообщения ботом)
+
         super().save_model(request, obj, form, change)
 
-        # 2. Если поле ответа (reply_text) заполнено, отправляем уведомление в Telegram
-        if obj.reply_text:
-            bot_token = os.getenv("BOT_TOKEN")
-            user_id = obj.user_id # Убедись, что это поле есть в модели
-            
-            text = (
-                f"<b>📩 Sizning murojaatingizga javob keldi!</b>\n"
-                f"━━━━━━━━━━━━━━\n"
-                f"<b>Sizning xabaringiz:</b>\n<i>{obj.text}</i>\n\n"
-                f"<b>Admin javobi:</b>\n✅ {obj.reply_text}\n"
-                f"━━━━━━━━━━━━━━\n"
-                f"Rahmat, biz bilan qolganingiz uchun!"
-            )
-            
-            url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-            
-            try:
-                payload = {
-                    "chat_id": user_id,
-                    "text": text,
-                    "parse_mode": "HTML"
-                }
-                response = requests.post(url, data=payload)
-                
-                if response.status_code == 200:
-                    self.message_user(request, f"Javob @{obj.username} ga Telegram orqali yuborildi.")
-                else:
-                    # Если ошибка от Telegram (например, юзер заблокировал бота)
-                    self.message_user(request, f"Telegramga yuborishda xatolik (Status: {response.status_code}).", level='error')
-            except Exception as e:
-                self.message_user(request, f"Xatolik yuz berdi: {e}", level='error')
+admin.site.register(Application, ApplicationAdmin)
