@@ -56,7 +56,6 @@
         .custom-options.show { display: block; }
         .custom-option { transition: all 0.2s ease; cursor: pointer; color: black; }
         
-        /* Твой запрос: светло-серый фон и фиолетовый текст при наведении */
         .custom-option:hover {
             background-color: #eeeeee !important; 
             color: var(--accent) !important;
@@ -214,7 +213,18 @@
                 </div>
             </div>
             {% endfor %}
-        </div>
+            
+            {% if has_more_tickets %}
+            <button id="load-more-btn"
+                    hx-get="{% url 'load_more_tickets' %}?offset={{ next_offset }}&user_id={{ user_id }}"
+                    hx-target="#load-more-btn"
+                    hx-swap="outerHTML"
+                    onclick="tg.HapticFeedback.impactOccurred('medium')"
+                    class="neo-btn w-full py-4 mt-4 text-[10px] font-bold uppercase !bg-transparent border-2 !border-white/20 !text-white !shadow-[4px_4px_0px_rgba(255,255,255,0.2)] active:!shadow-[0px_0px_0px_rgba(255,255,255,0.2)]">
+                Yana yuklash
+            </button>
+            {% endif %}
+            </div>
         {% endif %}
     </div>
 
