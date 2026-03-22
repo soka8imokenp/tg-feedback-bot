@@ -14,14 +14,12 @@ class Application(models.Model):
     username = models.CharField(max_length=150, null=True, blank=True, verbose_name="Username")
     category = models.CharField(max_length=20, choices=TYPES, verbose_name="Kategoriya")
     
-    # --- НОВОЕ ПОЛЕ: ТЕМА (MAVZU) ---
-    subject = models.CharField(max_length=50, verbose_name="Mavzu", default="Mavzu ko'rsatilmagan")
+    # Тема обращения
+    subject = models.CharField(max_length=50, verbose_name="Mavzu", default="Mavzu ko'rsatilmadi")
     
-    # Текст пользователя
-    text = models.TextField(verbose_name="Xabar matni")
-    
-    # Поле для ответа админа
-    reply_text = models.TextField(null=True, blank=True, verbose_name="Admin javobi")
+    # --- НОВОЕ: ИСТОРИЯ ЧАТА В ФОРМАТЕ JSON ---
+    # Храним список вида: [{"role": "user", "text": "...", "date": "..."}, ...]
+    chat_history = models.JSONField(default=list, verbose_name="Chat tarixi", blank=True)
     
     # Статус: отвечено или нет
     is_answered = models.BooleanField(default=False, verbose_name="Javob berildi")
@@ -36,7 +34,6 @@ class Application(models.Model):
     class Meta:
         verbose_name = "Ariza"
         verbose_name_plural = "Arizalar"
-        # Сначала открытые, потом самые свежие по обновлению
         ordering = ['is_closed', '-updated_at'] 
 
     def __str__(self):

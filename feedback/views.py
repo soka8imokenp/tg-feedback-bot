@@ -34,15 +34,27 @@ def close_ticket(request, ticket_id):
     return HttpResponse("Metod xato", status=400)
 
 def reply_ticket(request, ticket_id):
-    """Добавление сообщения клиента в существующий диалог"""
+    """Добавление сообщения клиента в историю чата"""
     if request.method == 'POST':
         ticket = get_object_or_404(Application, id=ticket_id)
         new_reply = request.POST.get('new_reply')
         
         if new_reply and not ticket.is_closed:
-            # Убрали [Mijoz], просто добавляем текст с новой строки
-            ticket.text += f"\n\n{new_reply}"
+            # Создаем структуру сообщения
+            message_obj = {
+                'role': 'user',
+                'text': new_reply,
+                'time': timezone.now().strftime("%H:%M")
+            }
+            
+            # Добавляем в список и сохраняем
+            # ВАЖНО: Делаем копию списка, так как JSONField может не заметить append
+            history = list(ticket.chat_history)
+            history.append(message_obj)
+            ticket.chat_history = history
+            
             ticket.updated_at = timezone.now()
+            ticket.is_answered = False # Помечаем, что клиент ответил
             ticket.save()
             
             # Уведомляем админа
@@ -90,16 +102,23 @@ def submit_feedback(request):
         # --- ПОЛУЧЕНИЕ ДАННЫХ ИЗ ФОРМЫ ---
         username = request.POST.get('username', 'Anonymous')
         category = request.POST.get('category', 'other')
-        subject = request.POST.get('subject', 'Mavzu ko\'rsatilmadi') # Новое поле
+        subject = request.POST.get('subject', "Mavzu ko'rsatilmadi")
         text = request.POST.get('text')
+
+        # Формируем первое сообщение в истории
+        initial_history = [{
+            'role': 'user',
+            'text': text,
+            'time': timezone.now().strftime("%H:%M")
+        }]
 
         # Создание тикета
         Application.objects.create(
             user_id=user_id,
             username=username,
             category=category,
-            subject=subject, # Сохраняем тему
-            text=text 
+            subject=subject,
+            chat_history=initial_history # Используем новое поле
         )
 
         category_config = {
