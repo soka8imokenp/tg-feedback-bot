@@ -11,7 +11,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = os.getenv("ADMIN_ID")
 
 def index(request):
-    # Пытаемся взять user_id из GET или POST (важно для HTMX обновлений)
+    # Пытаемся взять user_id из GET или POST
     user_id = request.GET.get('user_id') or request.POST.get('user_id')
     history = []
     
@@ -30,8 +30,6 @@ def close_ticket(request, ticket_id):
         ticket = get_object_or_404(Application, id=ticket_id)
         ticket.is_closed = True
         ticket.save()
-        
-        # После закрытия вызываем index, он подтянет user_id из POST и вернет историю
         return index(request)
     return HttpResponse("Metod xato", status=400)
 
@@ -42,8 +40,8 @@ def reply_ticket(request, ticket_id):
         new_reply = request.POST.get('new_reply')
         
         if new_reply and not ticket.is_closed:
-            # Склеиваем старый текст с новым
-            ticket.text += f"\n\n[Mijoz]: {new_reply}"
+            # Убрали [Mijoz], просто добавляем текст с новой строки
+            ticket.text += f"\n\n{new_reply}"
             ticket.updated_at = timezone.now()
             ticket.save()
             
@@ -52,6 +50,7 @@ def reply_ticket(request, ticket_id):
             tg_message = (
                 f"💬 <b>#id{ticket.user_id} dan yangi xabar!</b>\n"
                 f"━━━━━━━━━━━━━━\n"
+                f"<b>Mavzu:</b> {ticket.subject}\n"
                 f"<b>Xabar:</b> {new_reply}\n\n"
                 f"👉 <i>Javob uchun #id{ticket.user_id} ga Reply qiling</i>"
             )
@@ -74,7 +73,6 @@ def submit_feedback(request):
             time_passed = timezone.now() - last_app.created_at
             if time_passed < timedelta(seconds=60):
                 wait_time = 60 - int(time_passed.total_seconds())
-                # Обертка id="form-container" ОБЯЗАТЕЛЬНА для HTMX
                 return HttpResponse(f'''
                     <div id="form-container" class="flex flex-col items-center justify-center h-screen space-y-6 p-8 bg-[#0c0a14]">
                         <script>window.Telegram.WebApp.HapticFeedback.notificationOccurred('warning');</script>
@@ -89,14 +87,18 @@ def submit_feedback(request):
                     </div>
                 ''')
 
+        # --- ПОЛУЧЕНИЕ ДАННЫХ ИЗ ФОРМЫ ---
         username = request.POST.get('username', 'Anonymous')
         category = request.POST.get('category', 'other')
+        subject = request.POST.get('subject', 'Mavzu ko\'rsatilmadi') # Новое поле
         text = request.POST.get('text')
 
+        # Создание тикета
         Application.objects.create(
             user_id=user_id,
             username=username,
             category=category,
+            subject=subject, # Сохраняем тему
             text=text 
         )
 
@@ -109,9 +111,11 @@ def submit_feedback(request):
         }
         icon, title = category_config.get(category, ('📩', 'YANGI XABAR'))
 
+        # Сообщение для админа в ТГ
         message = (
             f"<b>{icon} {title}</b>\n"
             f"━━━━━━━━━━━━━━\n"
+            f"<b>Mavzu:</b> {subject}\n"
             f"<b>Kimdan:</b> @{username}\n"
             f"<b>ID:</b> <code>{user_id}</code>\n"
             f"<b>Matn:</b> {text}\n\n"
@@ -125,7 +129,7 @@ def submit_feedback(request):
         except Exception as e:
             print(f"Telegram error: {e}")
 
-        # Success Screen с оберткой id="form-container"
+        # Success Screen
         return HttpResponse(f'''
             <div id="form-container" class="flex flex-col items-center justify-center h-screen space-y-6 p-8 bg-[#0c0a14]">
                 <script>window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');</script>

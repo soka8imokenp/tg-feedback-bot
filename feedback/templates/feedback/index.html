@@ -69,39 +69,45 @@
                     <div class="w-10 h-10 rounded-full border-2 border-black neo-avatar shadow-[3px_3px_0px_#000000]"></div>
                 </div>
                 
-                <form id="feedback-form" hx-post="{% url 'submit_feedback' %}" hx-target="#form-container" hx-select="#form-container" class="space-y-6">
+                <form id="feedback-form" hx-post="{% url 'submit_feedback' %}" hx-target="#form-container" hx-select="#form-container" class="space-y-5">
                     {% csrf_token %}
                     <input type="hidden" name="user_id" id="user_id_input" value="{{ user_id }}">
                     <input type="hidden" name="username" id="username_input">
                     <input type="hidden" name="category" id="category_input" value="news">
 
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold ml-2 text-gray-500 uppercase tracking-widest">Kategoriya</label>
+                    <div class="space-y-1">
+                        <label class="block text-[9px] font-bold ml-2 text-gray-500 uppercase tracking-widest">Kategoriya</label>
                         <div class="custom-select-wrapper neo-input" id="custom-select">
-                            <div class="custom-select-trigger p-4 flex justify-between items-center text-black font-bold text-sm">
+                            <div class="custom-select-trigger p-3 flex justify-between items-center text-black font-bold text-xs">
                                 <span id="selected-text">Yangilik yuborish</span>
                                 <svg class="w-4 h-4 transition-transform" id="select-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
                             </div>
                             <div class="custom-options" id="select-options">
-                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-xs font-bold" data-value="news">Yangilik yuborish</div>
-                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-xs font-bold" data-value="ads">Reklama joylashtirish</div>
-                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-xs font-bold" data-value="report">Shikoyat qilish</div>
-                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-xs font-bold" data-value="collab">Hamkorlik</div>
-                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-xs font-bold" data-value="other">Boshqa</div>
+                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-[10px] font-bold" data-value="news">Yangilik yuborish</div>
+                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-[10px] font-bold" data-value="ads">Reklama</div>
+                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-[10px] font-bold" data-value="report">Shikoyat</div>
+                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-[10px] font-bold" data-value="collab">Hamkorlik</div>
+                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-[10px] font-bold" data-value="other">Boshqa</div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold ml-2 text-gray-500 uppercase tracking-widest">Xabar matni</label>
-                        <textarea name="text" placeholder="Yangi murojaat yozing..." required 
-                            class="neo-input w-full p-4 bg-gray-50/50 text-black h-36 resize-none focus:outline-none text-sm font-bold"></textarea>
+                    <div class="space-y-1">
+                        <label class="block text-[9px] font-bold ml-2 text-gray-500 uppercase tracking-widest">Mavzu (maks. 50 ta belgi)</label>
+                        <input type="text" name="subject" maxlength="50" placeholder="Qisqacha mavzu..." required 
+                            class="neo-input w-full px-4 py-3 bg-white/90 text-black text-xs font-bold focus:outline-none">
                     </div>
 
-                    <button type="submit" id="submit-btn" class="neo-btn w-full py-5 font-bold text-sm flex items-center justify-center">
+                    <div class="space-y-1">
+                        <label class="block text-[9px] font-bold ml-2 text-gray-500 uppercase tracking-widest">Xabar matni</label>
+                        <textarea name="text" placeholder="Batafsil yozing..." required 
+                            class="neo-input w-full p-4 bg-white/90 text-black h-32 resize-none focus:outline-none text-xs font-bold"></textarea>
+                    </div>
+
+                    <button type="submit" id="submit-btn" class="neo-btn w-full py-4 font-bold text-xs flex items-center justify-center">
                         <span class="indicator-default text-white uppercase">Yuborish</span>
                         <div class="indicator-loading items-center space-x-2 text-white">
-                            <svg class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            <svg class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                             <span class="uppercase">Yuborilmoqda...</span>
                         </div>
                     </button>
@@ -116,22 +122,22 @@
             <div class="history-card overflow-hidden">
                 <div class="p-5 cursor-pointer" onclick="toggleCard(this)">
                     <div class="flex justify-between items-start mb-3">
-                        <span class="text-[9px] px-2 py-1 bg-[#ad88b9] text-white rounded-lg uppercase font-bold border border-black shadow-[2px_2px_0px_#000000]">{{ item.category }}</span>
+                        <span class="text-[8px] px-2 py-1 bg-[#ad88b9] text-white rounded-lg uppercase font-bold border border-black shadow-[2px_2px_0px_#000000]">{{ item.category }}</span>
                         <span class="text-[8px] text-white/40 uppercase font-bold">{{ item.created_at|date:"d.m.Y H:i" }}</span>
                     </div>
-                    <p class="preview-text text-white/90 text-xs font-medium truncate preserve-lines">{{ item.text }}</p>
+                    <p class="preview-text text-white text-xs font-bold uppercase tracking-tight truncate">{{ item.subject }}</p>
                 </div>
 
                 <div class="expanded-content hidden px-5 pb-5 border-t border-white/10 pt-4">
                     <div class="mb-4">
-                        <span class="text-[8px] font-bold uppercase text-white/40 block mb-2">Muloqot tarixi:</span>
-                        <p class="text-white/90 text-xs font-medium preserve-lines">{{ item.text }}</p>
+                        <span class="text-[8px] font-bold uppercase text-[#ad88b9] block mb-2 tracking-widest">Murojaat matni:</span>
+                        <p class="text-white/90 text-xs font-medium leading-relaxed preserve-lines">{{ item.text }}</p>
                     </div>
                     
                     {% if item.reply_text %} 
-                    <div class="mt-3 pt-3 border-t border-black/20 mb-4">
+                    <div class="mt-3 pt-3 border-t border-white/5 mb-4">
                         <span class="text-[9px] font-bold uppercase text-[#ad88b9] tracking-widest block mb-2">Admin javobi:</span>
-                        <div class="bg-white/10 p-3 rounded-xl border border-black/10 text-xs italic text-white/80 preserve-lines">{{ item.reply_text }}</div>
+                        <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-xs italic text-white/80 preserve-lines">{{ item.reply_text }}</div>
                     </div>
                     {% endif %}
 
@@ -139,17 +145,17 @@
                         <form hx-post="{% url 'reply_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" class="mt-4 flex items-center space-x-2 border-t border-white/10 pt-4 mb-4">
                             {% csrf_token %}
                             <input type="hidden" name="user_id" value="{{ user_id }}">
-                            <input type="text" name="new_reply" placeholder="Xabar yozish..." required class="neo-input flex-1 px-3 py-2 text-[10px] h-10 font-bold focus:outline-none bg-white/90">
+                            <input type="text" name="new_reply" placeholder="Javob yozish..." required class="neo-input flex-1 px-3 py-2 text-[10px] h-10 font-bold focus:outline-none bg-white/90">
                             <button type="submit" class="w-10 h-10 flex-shrink-0 bg-[#ad88b9] text-white rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] active:translate-y-0.5 active:shadow-none transition-all flex items-center justify-center">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                             </button>
                         </form>
                         <div class="flex justify-between items-center border-t border-white/10 pt-4">
                             <span class="text-[9px] font-bold uppercase text-green-500">● Ochiq</span>
-                            <button hx-post="{% url 'close_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" hx-vals='{"user_id": "{{ user_id }}"}' hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' class="text-[9px] font-bold bg-[#ad88b9] text-white px-3 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] active:translate-y-0.5 active:shadow-none transition-all uppercase">Masalani yopish</button>
+                            <button hx-post="{% url 'close_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" hx-vals='{"user_id": "{{ user_id }}"}' hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' class="text-[8px] font-bold bg-[#ad88b9] text-white px-3 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] active:translate-y-0.5 active:shadow-none transition-all uppercase">Yopish</button>
                         </div>
                     {% else %}
-                        <div class="pt-4 border-t border-white/10 text-[9px] font-bold uppercase text-gray-500">✅ Yopilgan</div>
+                        <div class="pt-4 border-t border-white/10 text-[8px] font-bold uppercase text-white/20 tracking-widest">✅ Yopilgan</div>
                     {% endif %}
                 </div>
             </div>
@@ -164,27 +170,23 @@
         tg.expand();
         tg.setHeaderColor('#0c0a14');
 
-        // Функция инициализации селектора и данных пользователя
         function setupLogic() {
             const user = tg.initDataUnsafe?.user;
             if (user) {
                 const uId = user.id.toString();
                 const uName = user.username || "anonymous";
                 
-                // Заполняем скрытые поля, если они есть
                 const idInput = document.getElementById('user_id_input');
                 const nameInput = document.getElementById('username_input');
                 if (idInput) idInput.value = uId;
                 if (nameInput) nameInput.value = uName;
 
-                // Если в URL нет user_id, редиректим (только при первой загрузке)
                 const urlParams = new URLSearchParams(window.location.search);
                 if (!urlParams.has('user_id')) {
                     window.location.replace(window.location.pathname + `?user_id=${uId}`);
                 }
             }
 
-            // Логика кастомного селекта
             const selectWrapper = document.getElementById('custom-select');
             const optionsList = document.getElementById('select-options');
             const arrow = document.getElementById('select-arrow');
@@ -209,15 +211,12 @@
             }
         }
 
-        // Запуск при первой загрузке
         setupLogic();
 
-        // ПЕРЕЗАПУСК ПРИ КАЖДОМ ОБНОВЛЕНИИ HTMX
         document.body.addEventListener('htmx:afterSettle', () => {
             setupLogic();
         });
 
-        // Глобальные слушатели (не ломаются при обновлении)
         window.toggleCard = function(element) {
             const card = element.closest('.history-card');
             const content = card.querySelector('.expanded-content');
@@ -236,11 +235,6 @@
         });
 
         document.body.addEventListener('htmx:afterRequest', (event) => {
-            if (event.detail.successful) {
-                tg.HapticFeedback.notificationOccurred('success');
-            } else {
-                tg.HapticFeedback.notificationOccurred('error');
-            }
             const btn = document.querySelector('#submit-btn');
             if (btn) btn.disabled = false;
         });

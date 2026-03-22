@@ -14,6 +14,9 @@ class Application(models.Model):
     username = models.CharField(max_length=150, null=True, blank=True, verbose_name="Username")
     category = models.CharField(max_length=20, choices=TYPES, verbose_name="Kategoriya")
     
+    # --- НОВОЕ ПОЛЕ: ТЕМА (MAVZU) ---
+    subject = models.CharField(max_length=50, verbose_name="Mavzu", default="Mavzu ko'rsatilmagan")
+    
     # Текст пользователя
     text = models.TextField(verbose_name="Xabar matni")
     
@@ -23,9 +26,8 @@ class Application(models.Model):
     # Статус: отвечено или нет
     is_answered = models.BooleanField(default=False, verbose_name="Javob berildi")
 
-    # СТИЛЬ STEAM: Статус закрытия вопроса
-    # Если True — диалог окончен, кнопка "Отправить" для этого тикета исчезнет
-    is_closed = models.BooleanField(default=False, verbose_name="Yopilgan (Steam Style)")
+    # Статус закрытия вопроса
+    is_closed = models.BooleanField(default=False, verbose_name="Yopilgan")
     
     # Даты
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yuborilgan vaqt")
@@ -34,9 +36,9 @@ class Application(models.Model):
     class Meta:
         verbose_name = "Ariza"
         verbose_name_plural = "Arizalar"
-        # Сортировка по обновлению: если админ ответил, тикет прыгает вверх
+        # Сначала открытые, потом самые свежие по обновлению
         ordering = ['is_closed', '-updated_at'] 
 
     def __str__(self):
         status = "✅" if self.is_closed else "📩"
-        return f"{status} {self.category} - @{self.username}"
+        return f"{status} [{self.category}] {self.subject} - @{self.username}"
