@@ -15,10 +15,7 @@
             background-color: var(--dark-bg);
             font-family: 'Unbounded', sans-serif;
             margin: 0; min-height: 100vh; color: white;
-            -webkit-tap-highlight-color: transparent;
         }
-
-        /* --- NEO-ДИЗАЙН КАРТОЧЕК --- */
         .neo-card {
             position: relative;
             background-image: url("{% static 'feedback/kawaii.png' %}");
@@ -36,63 +33,19 @@
             background-size: cover; background-position: center; background-color: white;
         }
         .neo-input { border: 2px solid #000000; border-radius: 20px; background: rgba(248, 249, 250, 0.9); color: black; }
-        
         .neo-btn {
             background-color: var(--accent); border: 2px solid #000000;
             box-shadow: 4px 4px 0px #000000; border-radius: 22px;
             color: white; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .neo-btn:active { box-shadow: 0px 0px 0px #000000; transform: translate(3px, 3px); }
-
-        /* --- ИСТОРИЯ И ПЛАВНАЯ АНИМАЦИЯ --- */
         .history-card {
             background: rgba(255, 255, 255, 0.05); border: 2px solid #000000;
             box-shadow: 4px 4px 0px #000000; border-radius: 20px;
             backdrop-filter: blur(10px);
-            transition: transform 0.2s ease;
-        }
-        .history-card:active { transform: scale(0.98); }
-
-        .expanded-content {
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .expanded-content.show {
-            max-height: 2000px; /* Достаточно для чата */
-            opacity: 1;
-            padding-top: 1rem;
         }
 
-        /* --- CUSTOM SELECT ДИЗАЙН --- */
-        .custom-options {
-            display: none; position: absolute; top: calc(100% + 8px); left: 0; right: 0; 
-            background: white; border: 2px solid #000; border-radius: 20px; 
-            z-index: 50; overflow: hidden; box-shadow: 6px 6px 0px #000;
-        }
-        .custom-options.show { display: block; animation: slideIn 0.2s ease-out; }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .custom-option {
-            transition: all 0.2s ease;
-            cursor: pointer;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
-        .custom-option:last-child { border-bottom: none; }
-        
-        /* Тот самый эффект при наведении */
-        .custom-option:hover {
-            background-color: var(--accent) !important;
-            color: white !important;
-            padding-left: 1.5rem; /* Сдвиг вправо */
-        }
-
-        /* --- ЛАМПОЧКИ --- */
+        /* --- СТИЛИ ЛАМПОЧЕК --- */
         @keyframes pulse-green {
             0% { box-shadow: 0 0 0 0px rgba(34, 197, 94, 0.7); }
             70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
@@ -106,10 +59,14 @@
         .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 6px; }
         .status-open .dot { background-color: #22c55e; animation: pulse-green 2s infinite; }
         .status-pending .dot { background-color: #eab308; animation: pulse-yellow 2s infinite; }
-        
+        .status-closed .dot { background-color: #6b7280; }
+
         .chat-container { max-height: 350px; overflow-y: auto; scrollbar-width: none; }
+        .chat-container::-webkit-scrollbar { display: none; }
         .bubble-user { background-color: var(--accent); border: 2px solid #000; border-radius: 18px 18px 0 18px; }
         .bubble-admin { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 18px 18px 18px 0; }
+        .custom-options { display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #000; border-radius: 20px; z-index: 50; }
+        .custom-options.show { display: block; }
         .preserve-lines { white-space: pre-wrap; word-break: break-all; }
     </style>
 </head>
@@ -139,19 +96,19 @@
                                 <span id="selected-text">Yangilik yuborish</span>
                                 <svg class="w-4 h-4 transition-transform" id="select-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
                             </div>
-                            <div class="custom-options" id="select-options">
-                                <div class="custom-option p-4 text-black text-[10px] font-bold" data-value="news">Yangilik yuborish</div>
-                                <div class="custom-option p-4 text-black text-[10px] font-bold" data-value="ads">Reklama</div>
-                                <div class="custom-option p-4 text-black text-[10px] font-bold" data-value="report">Shikoyat</div>
-                                <div class="custom-option p-4 text-black text-[10px] font-bold" data-value="collab">Hamkorlik</div>
-                                <div class="custom-option p-4 text-black text-[10px] font-bold" data-value="other">Boshqa</div>
+                            <div class="custom-options shadow-[6px_6px_0px_#000]" id="select-options">
+                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-[10px] font-bold" data-value="news">Yangilik yuborish</div>
+                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-[10px] font-bold" data-value="ads">Reklama</div>
+                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-[10px] font-bold" data-value="report">Shikoyat</div>
+                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-[10px] font-bold" data-value="collab">Hamkorlik</div>
+                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-[10px] font-bold" data-value="other">Boshqa</div>
                             </div>
                         </div>
                     </div>
 
                     <div class="space-y-1">
-                        <label class="block text-[9px] font-bold ml-2 text-gray-500 uppercase tracking-widest">Mavzu (maks. 20 ta)</label>
-                        <input type="text" name="subject" maxlength="20" placeholder="Qisqacha..." required 
+                        <label class="block text-[9px] font-bold ml-2 text-gray-500 uppercase tracking-widest">Mavzu (maks. 20 ta belgi)</label>
+                        <input type="text" name="subject" maxlength="20" placeholder="Qisqacha mavzu..." required 
                             class="neo-input w-full px-4 py-3 bg-white/90 text-black text-xs font-bold focus:outline-none">
                     </div>
 
@@ -161,7 +118,9 @@
                             class="neo-input w-full p-4 bg-white/90 text-black h-32 resize-none focus:outline-none text-xs font-bold"></textarea>
                     </div>
 
-                    <button type="submit" id="submit-btn" class="neo-btn w-full py-4 font-bold text-xs uppercase">Yuborish</button>
+                    <button type="submit" id="submit-btn" class="neo-btn w-full py-4 font-bold text-xs">
+                        <span class="uppercase">Yuborish</span>
+                    </button>
                 </form>
             </div>
         </div>
@@ -171,7 +130,7 @@
             <h3 class="text-[10px] font-bold uppercase tracking-[3px] text-white/50 pl-2">Mening murojaatlarim</h3>
             {% for item in history %}
             <div class="history-card overflow-hidden">
-                <div class="p-5 cursor-pointer flex flex-col" onclick="toggleCard(this)">
+                <div class="p-5 cursor-pointer" onclick="toggleCard(this)">
                     <div class="flex justify-between items-start mb-3">
                         <span class="text-[8px] px-2 py-1 bg-[#ad88b9] text-white rounded-lg uppercase font-bold border border-black shadow-[2px_2px_0px_#000000]">{{ item.get_category_display }}</span>
                         <span class="text-[8px] text-white/40 uppercase font-bold local-time" data-utc="{{ item.created_at|date:'c' }}">
@@ -179,43 +138,50 @@
                         </span>
                     </div>
                     <p class="preview-text text-white text-xs font-bold uppercase tracking-tight truncate">{{ item.subject }}</p>
-                    
-                    <div class="expanded-content">
-                        <div class="chat-container space-y-4 mb-6 pr-1">
-                            {% for msg in item.chat_history %}
-                                <div class="flex flex-col {% if msg.role == 'user' %}items-end{% else %}items-start{% endif %}">
-                                    <div class="{% if msg.role == 'user' %}bubble-user shadow-[3px_3px_0px_#000]{% else %}bubble-admin{% endif %} p-3 max-w-[85%]">
-                                        <p class="text-[11px] font-bold preserve-lines text-white leading-relaxed">{{ msg.text }}</p>
-                                        <span class="text-[7px] opacity-40 mt-1 block font-bold local-time-msg" data-utc="{{ msg.time }}">
-                                            {{ msg.time }}
-                                        </span>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
+                </div>
 
-                        {% if not item.is_closed %}
-                            <form hx-post="{% url 'reply_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" class="mt-4 flex items-center space-x-2 mb-4" onclick="event.stopPropagation()">
-                                {% csrf_token %}
-                                <input type="hidden" name="user_id" value="{{ user_id }}">
-                                <input type="text" name="new_reply" placeholder="Xabar..." required class="neo-input flex-1 px-3 py-2 text-[10px] h-10 font-bold focus:outline-none bg-white/90">
-                                <button type="submit" class="w-10 h-10 flex-shrink-0 bg-[#ad88b9] text-white rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] flex items-center justify-center">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                                </button>
-                            </form>
-                            
-                            <div class="flex justify-between items-center border-t border-white/10 pt-4" onclick="event.stopPropagation()">
-                                {% if item.is_answered %}
-                                    <div class="status-pending flex items-center text-[9px] font-bold uppercase text-yellow-500"><span class="dot"></span> Ko'rib chiqilmoqda</div>
-                                {% else %}
-                                    <div class="status-open flex items-center text-[9px] font-bold uppercase text-green-500"><span class="dot"></span> Ochiq</div>
-                                {% endif %}
-                                <button hx-post="{% url 'close_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" hx-vals='{"user_id": "{{ user_id }}"}' hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' class="text-[8px] font-bold bg-[#ad88b9] text-white px-3 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] uppercase">Yopish</button>
+                <div class="expanded-content hidden px-5 pb-5 border-t border-white/10 pt-4">
+                    <div class="chat-container space-y-4 mb-6 pr-1">
+                        {% for msg in item.chat_history %}
+                            <div class="flex flex-col {% if msg.role == 'user' %}items-end{% else %}items-start{% endif %}">
+                                <div class="{% if msg.role == 'user' %}bubble-user shadow-[3px_3px_0px_#000]{% else %}bubble-admin{% endif %} p-3 max-w-[85%]">
+                                    <p class="text-[11px] font-bold preserve-lines text-white leading-relaxed">{{ msg.text }}</p>
+                                    <span class="text-[7px] opacity-40 mt-1 block font-bold local-time-msg" data-utc="{{ msg.time }}">
+                                        {{ msg.time }}
+                                    </span>
+                                </div>
                             </div>
-                        {% else %}
-                            <div class="pt-4 border-t border-white/10 text-[8px] font-bold uppercase text-white/20 tracking-widest text-center">✅ Murojaat yopilgan</div>
-                        {% endif %}
+                        {% endfor %}
                     </div>
+
+                    {% if not item.is_closed %}
+                        <form hx-post="{% url 'reply_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" class="mt-4 flex items-center space-x-2 mb-4">
+                            {% csrf_token %}
+                            <input type="hidden" name="user_id" value="{{ user_id }}">
+                            <input type="text" name="new_reply" placeholder="Xabar yozish..." required class="neo-input flex-1 px-3 py-2 text-[10px] h-10 font-bold focus:outline-none bg-white/90">
+                            <button type="submit" class="w-10 h-10 flex-shrink-0 bg-[#ad88b9] text-white rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] flex items-center justify-center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                            </button>
+                        </form>
+                        
+                        <div class="flex justify-between items-center border-t border-white/10 pt-4">
+                            {% if item.is_answered %}
+                                <div class="status-pending flex items-center text-[9px] font-bold uppercase text-yellow-500">
+                                    <span class="dot"></span> Ko'rib chiqilmoqda
+                                </div>
+                            {% else %}
+                                <div class="status-open flex items-center text-[9px] font-bold uppercase text-green-500">
+                                    <span class="dot"></span> Ochiq
+                                </div>
+                            {% endif %}
+                            
+                            <button hx-post="{% url 'close_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" hx-vals='{"user_id": "{{ user_id }}"}' hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' class="text-[8px] font-bold bg-[#ad88b9] text-white px-3 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] uppercase">Yopish</button>
+                        </div>
+                    {% else %}
+                        <div class="pt-4 border-t border-white/10 text-[8px] font-bold uppercase text-white/20 tracking-widest text-center flex items-center justify-center">
+                           <span class="mr-2">🔒</span> Murojaat yopilgan
+                        </div>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -229,25 +195,28 @@
         tg.expand();
         tg.setHeaderColor('#0c0a14');
 
-        // КОРРЕКЦИЯ ВРЕМЕНИ
         function updateAllTimes() {
             document.querySelectorAll('.local-time, .local-time-msg').forEach(el => {
                 let utcStr = el.getAttribute('data-utc');
                 if (!utcStr) return;
+
+                // Если время пришло как HH:MM (старый формат чата), превращаем в ISO
                 if (utcStr.length === 5 && utcStr.includes(':')) {
                     const now = new Date();
                     utcStr = `${now.toISOString().split('T')[0]}T${utcStr}:00Z`;
                 }
+
                 const date = new Date(utcStr);
                 if (!isNaN(date)) {
-                    const h = date.getHours().toString().padStart(2, '0');
-                    const m = date.getMinutes().toString().padStart(2, '0');
+                    const hours = date.getHours().toString().padStart(2, '0');
+                    const minutes = date.getMinutes().toString().padStart(2, '0');
+                    
                     if (el.classList.contains('local-time')) {
-                        const d = date.getDate().toString().padStart(2, '0');
-                        const mon = (date.getMonth() + 1).toString().padStart(2, '0');
-                        el.innerText = `${d}.${mon}.${date.getFullYear()} ${h}:${m}`;
+                        const day = date.getDate().toString().padStart(2, '0');
+                        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                        el.innerText = `${day}.${month}.${date.getFullYear()} ${hours}:${minutes}`;
                     } else {
-                        el.innerText = `${h}:${m}`;
+                        el.innerText = `${hours}:${minutes}`;
                     }
                 }
             });
@@ -257,11 +226,16 @@
             const user = tg.initDataUnsafe?.user;
             if (user) {
                 const uId = user.id.toString();
+                const uName = user.username || "anonymous";
                 if (document.getElementById('user_id_input')) document.getElementById('user_id_input').value = uId;
-                if (document.getElementById('username_input')) document.getElementById('username_input').value = user.username || "anonymous";
+                if (document.getElementById('username_input')) document.getElementById('username_input').value = uName;
+
+                const urlParams = new URLSearchParams(window.location.search);
+                if (!urlParams.has('user_id')) {
+                    window.location.replace(window.location.pathname + `?user_id=${uId}`);
+                }
             }
 
-            // SELECT LOGIC
             const selectWrapper = document.getElementById('custom-select');
             const optionsList = document.getElementById('select-options');
             const arrow = document.getElementById('select-arrow');
@@ -270,7 +244,6 @@
                 selectWrapper.onclick = (e) => {
                     optionsList.classList.toggle('show');
                     if(arrow) arrow.style.transform = optionsList.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
-                    tg.HapticFeedback.impactOccurred('light');
                 };
 
                 document.querySelectorAll('.custom-option').forEach(option => {
@@ -279,7 +252,6 @@
                         document.getElementById('category_input').value = e.target.getAttribute('data-value');
                         optionsList.classList.remove('show');
                         if(arrow) arrow.style.transform = 'rotate(0deg)';
-                        tg.HapticFeedback.selectionChanged();
                         e.stopPropagation();
                     };
                 });
@@ -287,31 +259,23 @@
             updateAllTimes();
         }
 
-        // РАСКРЫТИЕ КАРТОЧЕК С АНИМАЦИЕЙ
+        setupLogic();
+
+        document.body.addEventListener('htmx:afterSettle', () => {
+            setupLogic();
+        });
+
         window.toggleCard = function(element) {
-            const content = element.querySelector('.expanded-content');
-            const preview = element.querySelector('.preview-text');
-            
-            const isOpening = !content.classList.contains('show');
-            
-            // Закрываем другие (опционально, если хочешь аккордеон)
-            // document.querySelectorAll('.expanded-content').forEach(el => el.classList.remove('show'));
-
-            content.classList.toggle('show');
-            preview.style.display = isOpening ? 'none' : 'block';
-            
-            tg.HapticFeedback.impactOccurred('medium');
-
-            if(isOpening) {
-                setTimeout(() => {
-                    const container = content.querySelector('.chat-container');
-                    if(container) container.scrollTop = container.scrollHeight;
-                }, 300);
+            const card = element.closest('.history-card');
+            const content = card.querySelector('.expanded-content');
+            const preview = card.querySelector('.preview-text');
+            content.classList.toggle('hidden');
+            preview.classList.toggle('hidden');
+            if(!content.classList.contains('hidden')) {
+                const container = content.querySelector('.chat-container');
+                if(container) container.scrollTop = container.scrollHeight;
             }
         };
-
-        setupLogic();
-        document.body.addEventListener('htmx:afterSettle', () => setupLogic());
     </script>
 </body>
 </html>
