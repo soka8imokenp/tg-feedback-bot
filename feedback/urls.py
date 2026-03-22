@@ -8,9 +8,13 @@ urlpatterns = [
     # Отправка новой формы
     path('submit/', views.submit_feedback, name='submit_feedback'),
     
-    # СТИЛЬ STEAM: Закрытие тикета (обработка нажатия кнопки "Masalani yopish")
+    # Закрытие тикета
     path('close/<int:ticket_id>/', views.close_ticket, name='close_ticket'),
 
-    # НОВОЕ: Ответ в существующий диалог (чат внутри карточки)
+    # Ответ в существующий диалог
     path('reply/<int:ticket_id>/', views.reply_ticket, name='reply_ticket'),
+
+    # НОВОЕ: Подгрузка дополнительных тикетов (Пагинация)
+    # name='load_more_tickets' должен совпадать с тем, что мы написали в hx-get шаблона
+    path('load-more/', views.load_more_tickets, name='load_more_tickets'),
 ]

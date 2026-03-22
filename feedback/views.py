@@ -14,16 +14,55 @@ def index(request):
     # Пытаемся взять user_id из GET или POST
     user_id = request.GET.get('user_id') or request.POST.get('user_id')
     history = []
+    has_more_tickets = False
+    next_offset = 0
     
     if user_id:
-        # Сначала открытые, потом закрытые.
-        history = Application.objects.filter(user_id=user_id).order_by('is_closed', '-updated_at')[:5]
+        # Получаем общее количество тикетов пользователя
+        total_count = Application.objects.filter(user_id=user_id).count()
+        
+        # Берем первые 5 тикетов (сначала открытые, потом закрытые)
+        limit = 5
+        history = Application.objects.filter(user_id=user_id).order_by('is_closed', '-updated_at')[:limit]
+        
+        # Проверяем, есть ли еще тикеты для подгрузки
+        has_more_tickets = total_count > limit
+        next_offset = limit
     
     context = {
         'history': history,
-        'user_id': user_id
+        'user_id': user_id,
+        'has_more_tickets': has_more_tickets,
+        'next_offset': next_offset
     }
     return render(request, 'feedback/index.html', context)
+
+def load_more_tickets(request):
+    """Функция для подгрузки следующих 5 тикетов через HTMX"""
+    user_id = request.GET.get('user_id')
+    offset = int(request.GET.get('offset', 0))
+    limit = 5
+    
+    if not user_id:
+        return HttpResponse("")
+
+    # Получаем следующую порцию тикетов
+    history = Application.objects.filter(user_id=user_id).order_by('is_closed', '-updated_at')[offset:offset + limit]
+    
+    # Считаем, остались ли еще тикеты
+    total_count = Application.objects.filter(user_id=user_id).count()
+    has_more_tickets = total_count > (offset + limit)
+    
+    context = {
+        'history': history,
+        'user_id': user_id,
+        'next_offset': offset + limit,
+        'has_more_tickets': has_more_tickets
+    }
+    
+    # Возвращаем специальный мини-шаблон (создайте этот файл в templates/feedback/partials/ticket_list.html)
+    # Если файла нет, можно временно возвращать тот же index.html, но лучше создать фрагмент.
+    return render(request, 'feedback/partials/ticket_list.html', context)
 
 def close_ticket(request, ticket_id):
     if request.method == 'POST':
@@ -40,24 +79,20 @@ def reply_ticket(request, ticket_id):
         new_reply = request.POST.get('new_reply')
         
         if new_reply and not ticket.is_closed:
-            # Создаем структуру сообщения
             message_obj = {
                 'role': 'user',
                 'text': new_reply,
                 'time': timezone.now().strftime("%H:%M")
             }
             
-            # Добавляем в список и сохраняем
-            # ВАЖНО: Делаем копию списка, так как JSONField может не заметить append
             history = list(ticket.chat_history)
             history.append(message_obj)
             ticket.chat_history = history
             
             ticket.updated_at = timezone.now()
-            ticket.is_answered = False # Помечаем, что клиент ответил
+            ticket.is_answered = False 
             ticket.save()
             
-            # Уведомляем админа
             url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
             tg_message = (
                 f"💬 <b>#id{ticket.user_id} dan yangi xabar!</b>\n"
@@ -78,9 +113,7 @@ def submit_feedback(request):
     if request.method == 'POST':
         user_id = request.POST.get('user_id', 'Unknown')
         
-        # --- ANTI-SPAM LOGIKA ---
         last_app = Application.objects.filter(user_id=user_id).order_by('-created_at').first()
-        
         if last_app:
             time_passed = timezone.now() - last_app.created_at
             if time_passed < timedelta(seconds=60):
@@ -99,26 +132,23 @@ def submit_feedback(request):
                     </div>
                 ''')
 
-        # --- ПОЛУЧЕНИЕ ДАННЫХ ИЗ ФОРМЫ ---
         username = request.POST.get('username', 'Anonymous')
         category = request.POST.get('category', 'other')
         subject = request.POST.get('subject', "Mavzu ko'rsatilmadi")
         text = request.POST.get('text')
 
-        # Формируем первое сообщение в истории
         initial_history = [{
             'role': 'user',
             'text': text,
             'time': timezone.now().strftime("%H:%M")
         }]
 
-        # Создание тикета
         Application.objects.create(
             user_id=user_id,
             username=username,
             category=category,
             subject=subject,
-            chat_history=initial_history # Используем новое поле
+            chat_history=initial_history
         )
 
         category_config = {
@@ -130,7 +160,6 @@ def submit_feedback(request):
         }
         icon, title = category_config.get(category, ('📩', 'YANGI XABAR'))
 
-        # Сообщение для админа в ТГ
         message = (
             f"<b>{icon} {title}</b>\n"
             f"━━━━━━━━━━━━━━\n"
@@ -148,7 +177,7 @@ def submit_feedback(request):
         except Exception as e:
             print(f"Telegram error: {e}")
 
-        # Success Screen
+        # Success Screen (обновленная кнопка "Qaytish")
         return HttpResponse(f'''
             <div id="form-container" class="flex flex-col items-center justify-center h-screen space-y-6 p-8 bg-[#0c0a14]">
                 <script>window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');</script>
@@ -158,7 +187,10 @@ def submit_feedback(request):
                     </svg>
                 </div>
                 <h2 class="text-2xl font-bold text-white uppercase tracking-tighter">Yuborildi!</h2>
-                <button onclick="window.location.reload()" class="px-10 py-4 bg-[#ad88b9] border-2 border-black shadow-[4px_4px_0px_#000] rounded-2xl text-white font-bold uppercase text-[10px]">Orqaga</button>
+                <button onclick="window.Telegram.WebApp.HapticFeedback.impactOccurred('medium'); window.location.reload();" 
+                        class="px-10 py-4 bg-[#ad88b9] border-2 border-black shadow-[4px_4px_0px_#000] rounded-2xl text-white font-bold uppercase text-[10px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
+                    Qaytish
+                </button>
             </div>
         ''')
 
