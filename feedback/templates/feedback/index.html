@@ -18,7 +18,13 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- NEO-ДИЗАЙН КАРТОЧЕК --- */
+        /* --- АНИМАЦИИ --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+
         .neo-card {
             position: relative;
             background-image: url("{% static 'feedback/kawaii.png' %}");
@@ -44,78 +50,58 @@
         }
         .neo-btn:active { box-shadow: 0px 0px 0px #000000; transform: translate(3px, 3px); }
 
-        /* --- ИСТОРИЯ И ПЛАВНАЯ АНИМАЦИЯ --- */
+        /* --- ИСТОРИЯ --- */
         .history-card {
             background: rgba(255, 255, 255, 0.05); border: 2px solid #000000;
             box-shadow: 4px 4px 0px #000000; border-radius: 20px;
             backdrop-filter: blur(10px);
             transition: transform 0.2s ease;
         }
-        .history-card:active { transform: scale(0.98); }
-
         .expanded-content {
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
+            max-height: 0; opacity: 0; overflow: hidden;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .expanded-content.show {
-            max-height: 2000px; /* Достаточно для чата */
-            opacity: 1;
-            padding-top: 1rem;
-        }
+        .expanded-content.show { max-height: 2000px; opacity: 1; padding-top: 1rem; }
 
-        /* --- CUSTOM SELECT ДИЗАЙН --- */
+        /* --- CUSTOM SELECT (ОБНОВЛЕННЫЙ ЦВЕТ) --- */
         .custom-options {
             display: none; position: absolute; top: calc(100% + 8px); left: 0; right: 0; 
             background: white; border: 2px solid #000; border-radius: 20px; 
             z-index: 50; overflow: hidden; box-shadow: 6px 6px 0px #000;
         }
-        .custom-options.show { display: block; animation: slideIn 0.2s ease-out; }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .custom-option {
-            transition: all 0.2s ease;
-            cursor: pointer;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
-        .custom-option:last-child { border-bottom: none; }
+        .custom-options.show { display: block; animation: fadeIn 0.2s ease-out; }
         
-        /* Тот самый эффект при наведении */
+        .custom-option { transition: all 0.2s ease; cursor: pointer; color: black; }
+        
+        /* Эффект: бледно-серый фон + фиолетовый текст */
         .custom-option:hover {
-            background-color: var(--accent) !important;
-            color: white !important;
-            padding-left: 1.5rem; /* Сдвиг вправо */
+            background-color: #f3f4f6 !important; 
+            color: var(--accent) !important;
+            padding-left: 1.5rem;
         }
 
-        /* --- ЛАМПОЧКИ --- */
-        @keyframes pulse-green {
-            0% { box-shadow: 0 0 0 0px rgba(34, 197, 94, 0.7); }
-            70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-            100% { box-shadow: 0 0 0 0px rgba(34, 197, 94, 0); }
-        }
-        @keyframes pulse-yellow {
-            0% { box-shadow: 0 0 0 0px rgba(234, 179, 8, 0.7); }
-            70% { box-shadow: 0 0 0 8px rgba(234, 179, 8, 0); }
-            100% { box-shadow: 0 0 0 0px rgba(234, 179, 8, 0); }
-        }
         .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-        .status-open .dot { background-color: #22c55e; animation: pulse-green 2s infinite; }
-        .status-pending .dot { background-color: #eab308; animation: pulse-yellow 2s infinite; }
-        
+        .status-open .dot { background-color: #22c55e; animation: pulse 2s infinite; }
         .chat-container { max-height: 350px; overflow-y: auto; scrollbar-width: none; }
         .bubble-user { background-color: var(--accent); border: 2px solid #000; border-radius: 18px 18px 0 18px; }
         .bubble-admin { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 18px 18px 18px 0; }
-        .preserve-lines { white-space: pre-wrap; word-break: break-all; }
     </style>
 </head>
 <body class="p-4">
     <div id="form-container" class="w-full max-w-md mx-auto space-y-8">
         
+        {% if success %}
+        <div class="neo-card p-10 text-center animate-fade-in">
+            <div class="neo-card-content">
+                <div class="w-20 h-20 bg-green-500 border-4 border-black rounded-full flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0px_#000]">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <h2 class="text-xl font-bold text-black uppercase mb-2">Yuborildi!</h2>
+                <p class="text-[10px] text-gray-600 font-bold uppercase mb-8">Tez orada javob beramiz</p>
+                <button onclick="window.location.reload()" class="neo-btn w-full py-4 text-xs font-bold uppercase animate-fade-in">Qaytish</button>
+            </div>
+        </div>
+        {% else %}
         <div class="neo-card p-8">
             <div class="neo-card-content">
                 <div class="flex items-center justify-between mb-8">
@@ -140,43 +126,40 @@
                                 <svg class="w-4 h-4 transition-transform" id="select-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
                             </div>
                             <div class="custom-options" id="select-options">
-                                <div class="custom-option p-4 text-black text-[10px] font-bold" data-value="news">Yangilik yuborish</div>
-                                <div class="custom-option p-4 text-black text-[10px] font-bold" data-value="ads">Reklama</div>
-                                <div class="custom-option p-4 text-black text-[10px] font-bold" data-value="report">Shikoyat</div>
-                                <div class="custom-option p-4 text-black text-[10px] font-bold" data-value="collab">Hamkorlik</div>
-                                <div class="custom-option p-4 text-black text-[10px] font-bold" data-value="other">Boshqa</div>
+                                <div class="custom-option p-4 text-[10px] font-bold" data-value="news">Yangilik yuborish</div>
+                                <div class="custom-option p-4 text-[10px] font-bold" data-value="ads">Reklama</div>
+                                <div class="custom-option p-4 text-[10px] font-bold" data-value="report">Shikoyat</div>
+                                <div class="custom-option p-4 text-[10px] font-bold" data-value="collab">Hamkorlik</div>
+                                <div class="custom-option p-4 text-[10px] font-bold" data-value="other">Boshqa</div>
                             </div>
                         </div>
                     </div>
 
                     <div class="space-y-1">
-                        <label class="block text-[9px] font-bold ml-2 text-gray-500 uppercase tracking-widest">Mavzu (maks. 20 ta)</label>
-                        <input type="text" name="subject" maxlength="20" placeholder="Qisqacha..." required 
-                            class="neo-input w-full px-4 py-3 bg-white/90 text-black text-xs font-bold focus:outline-none">
+                        <label class="block text-[9px] font-bold ml-2 text-gray-500 uppercase tracking-widest">Mavzu (20 ta)</label>
+                        <input type="text" name="subject" maxlength="20" placeholder="..." required class="neo-input w-full px-4 py-3 bg-white/90 text-black text-xs font-bold focus:outline-none">
                     </div>
 
                     <div class="space-y-1">
                         <label class="block text-[9px] font-bold ml-2 text-gray-500 uppercase tracking-widest">Xabar matni</label>
-                        <textarea name="text" placeholder="Batafsil yozing..." required 
-                            class="neo-input w-full p-4 bg-white/90 text-black h-32 resize-none focus:outline-none text-xs font-bold"></textarea>
+                        <textarea name="text" placeholder="..." required class="neo-input w-full p-4 bg-white/90 text-black h-32 resize-none focus:outline-none text-xs font-bold"></textarea>
                     </div>
 
-                    <button type="submit" id="submit-btn" class="neo-btn w-full py-4 font-bold text-xs uppercase">Yuborish</button>
+                    <button type="submit" class="neo-btn w-full py-4 font-bold text-xs uppercase">Yuborish</button>
                 </form>
             </div>
         </div>
+        {% endif %}
 
-        {% if history %}
-        <div class="space-y-4 pb-10">
+        <div id="history-section" class="space-y-4 pb-10">
+            {% if history %}
             <h3 class="text-[10px] font-bold uppercase tracking-[3px] text-white/50 pl-2">Mening murojaatlarim</h3>
             {% for item in history %}
             <div class="history-card overflow-hidden">
                 <div class="p-5 cursor-pointer flex flex-col" onclick="toggleCard(this)">
                     <div class="flex justify-between items-start mb-3">
                         <span class="text-[8px] px-2 py-1 bg-[#ad88b9] text-white rounded-lg uppercase font-bold border border-black shadow-[2px_2px_0px_#000000]">{{ item.get_category_display }}</span>
-                        <span class="text-[8px] text-white/40 uppercase font-bold local-time" data-utc="{{ item.created_at|date:'c' }}">
-                            {{ item.created_at|date:"d.m.Y H:i" }}
-                        </span>
+                        <span class="text-[8px] text-white/40 uppercase font-bold local-time" data-utc="{{ item.created_at|date:'c' }}">{{ item.created_at|date:"d.m.Y H:i" }}</span>
                     </div>
                     <p class="preview-text text-white text-xs font-bold uppercase tracking-tight truncate">{{ item.subject }}</p>
                     
@@ -185,10 +168,8 @@
                             {% for msg in item.chat_history %}
                                 <div class="flex flex-col {% if msg.role == 'user' %}items-end{% else %}items-start{% endif %}">
                                     <div class="{% if msg.role == 'user' %}bubble-user shadow-[3px_3px_0px_#000]{% else %}bubble-admin{% endif %} p-3 max-w-[85%]">
-                                        <p class="text-[11px] font-bold preserve-lines text-white leading-relaxed">{{ msg.text }}</p>
-                                        <span class="text-[7px] opacity-40 mt-1 block font-bold local-time-msg" data-utc="{{ msg.time }}">
-                                            {{ msg.time }}
-                                        </span>
+                                        <p class="text-[11px] font-bold text-white leading-relaxed">{{ msg.text }}</p>
+                                        <span class="text-[7px] opacity-40 mt-1 block font-bold local-time-msg" data-utc="{{ msg.time }}">{{ msg.time }}</span>
                                     </div>
                                 </div>
                             {% endfor %}
@@ -203,14 +184,9 @@
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                                 </button>
                             </form>
-                            
                             <div class="flex justify-between items-center border-t border-white/10 pt-4" onclick="event.stopPropagation()">
-                                {% if item.is_answered %}
-                                    <div class="status-pending flex items-center text-[9px] font-bold uppercase text-yellow-500"><span class="dot"></span> Ko'rib chiqilmoqda</div>
-                                {% else %}
-                                    <div class="status-open flex items-center text-[9px] font-bold uppercase text-green-500"><span class="dot"></span> Ochiq</div>
-                                {% endif %}
-                                <button hx-post="{% url 'close_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" hx-vals='{"user_id": "{{ user_id }}"}' hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' class="text-[8px] font-bold bg-[#ad88b9] text-white px-3 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] uppercase">Yopish</button>
+                                <div class="text-[9px] font-bold uppercase text-green-500 flex items-center"><span class="dot"></span> Ochiq</div>
+                                <button hx-post="{% url 'close_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" hx-vals='{"user_id": "{{ user_id }}"}' class="text-[8px] font-bold bg-[#ad88b9] text-white px-3 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] uppercase">Yopish</button>
                             </div>
                         {% else %}
                             <div class="pt-4 border-t border-white/10 text-[8px] font-bold uppercase text-white/20 tracking-widest text-center">✅ Murojaat yopilgan</div>
@@ -219,8 +195,8 @@
                 </div>
             </div>
             {% endfor %}
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 
     <script>
@@ -229,7 +205,6 @@
         tg.expand();
         tg.setHeaderColor('#0c0a14');
 
-        // КОРРЕКЦИЯ ВРЕМЕНИ
         function updateAllTimes() {
             document.querySelectorAll('.local-time, .local-time-msg').forEach(el => {
                 let utcStr = el.getAttribute('data-utc');
@@ -261,7 +236,6 @@
                 if (document.getElementById('username_input')) document.getElementById('username_input').value = user.username || "anonymous";
             }
 
-            // SELECT LOGIC
             const selectWrapper = document.getElementById('custom-select');
             const optionsList = document.getElementById('select-options');
             const arrow = document.getElementById('select-arrow');
@@ -270,7 +244,6 @@
                 selectWrapper.onclick = (e) => {
                     optionsList.classList.toggle('show');
                     if(arrow) arrow.style.transform = optionsList.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
-                    tg.HapticFeedback.impactOccurred('light');
                 };
 
                 document.querySelectorAll('.custom-option').forEach(option => {
@@ -279,7 +252,6 @@
                         document.getElementById('category_input').value = e.target.getAttribute('data-value');
                         optionsList.classList.remove('show');
                         if(arrow) arrow.style.transform = 'rotate(0deg)';
-                        tg.HapticFeedback.selectionChanged();
                         e.stopPropagation();
                     };
                 });
@@ -287,21 +259,12 @@
             updateAllTimes();
         }
 
-        // РАСКРЫТИЕ КАРТОЧЕК С АНИМАЦИЕЙ
         window.toggleCard = function(element) {
             const content = element.querySelector('.expanded-content');
             const preview = element.querySelector('.preview-text');
-            
             const isOpening = !content.classList.contains('show');
-            
-            // Закрываем другие (опционально, если хочешь аккордеон)
-            // document.querySelectorAll('.expanded-content').forEach(el => el.classList.remove('show'));
-
             content.classList.toggle('show');
             preview.style.display = isOpening ? 'none' : 'block';
-            
-            tg.HapticFeedback.impactOccurred('medium');
-
             if(isOpening) {
                 setTimeout(() => {
                     const container = content.querySelector('.chat-container');
