@@ -33,19 +33,36 @@
             background-size: cover; background-position: center; background-color: white;
         }
         .neo-input { border: 2px solid #000000; border-radius: 20px; background: rgba(248, 249, 250, 0.9); color: black; }
+        
         .neo-btn {
             background-color: var(--accent); border: 2px solid #000000;
             box-shadow: 4px 4px 0px #000000; border-radius: 22px;
             color: white; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .neo-btn:active { box-shadow: 0px 0px 0px #000000; transform: translate(3px, 3px); }
+        
         .history-card {
             background: rgba(255, 255, 255, 0.05); border: 2px solid #000000;
             box-shadow: 4px 4px 0px #000000; border-radius: 20px;
             backdrop-filter: blur(10px);
         }
 
-        /* --- СТИЛИ ЛАМПОЧЕК --- */
+        /* --- СТИЛИ ВЫПАДАЮЩЕГО МЕНЮ --- */
+        .custom-options { 
+            display: none; position: absolute; top: 100%; left: 0; right: 0; 
+            background: white; border: 2px solid #000; border-radius: 20px; z-index: 50; 
+            overflow: hidden;
+        }
+        .custom-options.show { display: block; }
+        .custom-option { transition: all 0.2s ease; cursor: pointer; color: black; }
+        
+        /* Твой запрос: светло-серый фон и фиолетовый текст при наведении */
+        .custom-option:hover {
+            background-color: #eeeeee !important; 
+            color: var(--accent) !important;
+        }
+
+        /* --- СТИЛИ СТАТУСОВ --- */
         @keyframes pulse-green {
             0% { box-shadow: 0 0 0 0px rgba(34, 197, 94, 0.7); }
             70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
@@ -65,14 +82,25 @@
         .chat-container::-webkit-scrollbar { display: none; }
         .bubble-user { background-color: var(--accent); border: 2px solid #000; border-radius: 18px 18px 0 18px; }
         .bubble-admin { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 18px 18px 18px 0; }
-        .custom-options { display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #000; border-radius: 20px; z-index: 50; }
-        .custom-options.show { display: block; }
         .preserve-lines { white-space: pre-wrap; word-break: break-all; }
+        .hidden { display: none; }
     </style>
 </head>
 <body class="p-4">
     <div id="form-container" class="w-full max-w-md mx-auto space-y-8">
         
+        {% if success %}
+        <div class="neo-card p-10 text-center">
+            <div class="neo-card-content">
+                <div class="w-20 h-20 bg-green-500 border-4 border-black rounded-full flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0px_#000]">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <h2 class="text-xl font-bold text-black uppercase mb-2">Yuborildi!</h2>
+                <p class="text-[10px] text-gray-600 font-bold uppercase mb-8">Tez orada javob beramiz</p>
+                <button onclick="window.location.reload()" class="neo-btn w-full py-4 text-xs font-bold uppercase">Orqaga</button>
+            </div>
+        </div>
+        {% else %}
         <div class="neo-card p-8">
             <div class="neo-card-content">
                 <div class="flex items-center justify-between mb-8">
@@ -97,11 +125,11 @@
                                 <svg class="w-4 h-4 transition-transform" id="select-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
                             </div>
                             <div class="custom-options shadow-[6px_6px_0px_#000]" id="select-options">
-                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-[10px] font-bold" data-value="news">Yangilik yuborish</div>
-                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-[10px] font-bold" data-value="ads">Reklama</div>
-                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-[10px] font-bold" data-value="report">Shikoyat</div>
-                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-[10px] font-bold" data-value="collab">Hamkorlik</div>
-                                <div class="custom-option p-3 hover:bg-gray-100 text-black text-[10px] font-bold" data-value="other">Boshqa</div>
+                                <div class="custom-option p-3 text-black text-[10px] font-bold" data-value="news">Yangilik yuborish</div>
+                                <div class="custom-option p-3 text-black text-[10px] font-bold" data-value="ads">Reklama</div>
+                                <div class="custom-option p-3 text-black text-[10px] font-bold" data-value="report">Shikoyat</div>
+                                <div class="custom-option p-3 text-black text-[10px] font-bold" data-value="collab">Hamkorlik</div>
+                                <div class="custom-option p-3 text-black text-[10px] font-bold" data-value="other">Boshqa</div>
                             </div>
                         </div>
                     </div>
@@ -124,6 +152,7 @@
                 </form>
             </div>
         </div>
+        {% endif %}
 
         {% if history %}
         <div class="space-y-4 pb-10">
@@ -200,7 +229,6 @@
                 let utcStr = el.getAttribute('data-utc');
                 if (!utcStr) return;
 
-                // Если время пришло как HH:MM (старый формат чата), превращаем в ISO
                 if (utcStr.length === 5 && utcStr.includes(':')) {
                     const now = new Date();
                     utcStr = `${now.toISOString().split('T')[0]}T${utcStr}:00Z`;
