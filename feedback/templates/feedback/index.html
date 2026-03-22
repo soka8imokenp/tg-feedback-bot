@@ -15,138 +15,193 @@
         body { 
             background-color: var(--dark-bg);
             font-family: 'Unbounded', sans-serif;
-            margin: 0; padding: 1rem; color: white;
-            min-height: 100vh;
+            margin: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-start; 
+            min-height: 100vh; padding-top: 2rem;
+            color: white;
         }
         
+        /* Neo-Brutalism Cards */
         .neo-card {
-            position: relative; background-image: url("{% static 'feedback/kawaii.png' %}");
+            position: relative;
+            background-image: url("{% static 'feedback/kawaii.png' %}");
             background-size: cover; background-position: center;
-            border: 2px solid #000; box-shadow: 8px 8px 0px #000;
+            border: 2px solid #000000; box-shadow: 8px 8px 0px #000000;
             border-radius: 32px; overflow: hidden;
         }
-        .neo-card::before { content: ""; position: absolute; inset: 0; background: rgba(255, 255, 255, 0.85); z-index: 0; }
+        .neo-card::before {
+            content: ""; position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.85); z-index: 0;
+        }
         .neo-card-content { position: relative; z-index: 1; }
         
-        /* Steam Style Chat Bubbles */
-        .chat-container { display: flex; flex-direction: column; gap: 0.75rem; width: 100%; }
-        .bubble { 
-            max-width: 85%; padding: 12px 16px; border: 2px solid #000; 
-            border-radius: 20px; font-size: 12px; line-height: 1.4;
+        .neo-avatar {
+            background-image: url("{% static 'feedback/logo.png' %}");
+            background-size: cover; background-position: center;
+            background-repeat: no-repeat; background-color: white;
         }
-        .user-bubble { 
-            align-self: flex-end; background: white; color: black; 
-            box-shadow: 4px 4px 0px #000; border-bottom-right-radius: 4px; 
-        }
-        .admin-bubble { 
-            align-self: flex-start; background: var(--accent); color: white; 
-            box-shadow: -4px 4px 0px #000; border-bottom-left-radius: 4px; 
-        }
-
-        .neo-input { border: 2px solid #000; border-radius: 20px; background: rgba(248, 249, 250, 0.9); color: black; }
+        
+        .neo-input { border: 2px solid #000000; border-radius: 20px; background: rgba(248, 249, 250, 0.9); color: black; }
+        
         .neo-btn {
-            background-color: var(--accent); border: 2px solid #000;
-            box-shadow: 4px 4px 0px #000; border-radius: 22px;
-            text-transform: uppercase; transition: all 0.2s;
+            background-color: var(--accent); border: 2px solid #000000;
+            box-shadow: 4px 4px 0px #000000; border-radius: 22px;
+            color: white; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            text-transform: uppercase;
         }
-        .neo-btn:active { box-shadow: 0px 0px 0px #000; transform: translate(3px, 3px); }
+        .neo-btn:active { box-shadow: 0px 0px 0px #000000; transform: translate(3px, 3px); }
+        .neo-btn:disabled { opacity: 0.7; pointer-events: none; }
+        
+        .history-card {
+            background: rgba(255, 255, 255, 0.05); border: 2px solid #000000;
+            box-shadow: 4px 4px 0px #000000; border-radius: 20px;
+            backdrop-filter: blur(10px); transition: all 0.3s ease;
+        }
 
-        /* Custom Select */
+        /* Animations */
+        @keyframes zoom-in {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-in { animation: zoom-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        
         .custom-select-wrapper { position: relative; cursor: pointer; }
+        .custom-select-trigger {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem; font-weight: 700; font-size: 0.875rem; color: black;
+        }
         .custom-options {
             position: absolute; top: calc(100% + 8px); left: 0; right: 0;
-            background: white; border: 2px solid #000; border-radius: 20px;
-            box-shadow: 6px 6px 0px #000; z-index: 50; display: none;
+            background: white; border: 2px solid #000000; border-radius: 20px;
+            box-shadow: 6px 6px 0px #000000; z-index: 50; display: none; overflow: hidden;
         }
-        .custom-options.show { display: block; }
-        .custom-option { padding: 12px 20px; font-size: 11px; font-weight: 700; color: #444; border-bottom: 1px solid #eee; }
-
+        .custom-options.show { display: block; animation: selectFadeIn 0.2s ease-out; }
+        .custom-option { padding: 12px 20px; font-size: 0.75rem; font-weight: 700; color: #666; transition: all 0.2s; border-bottom: 1px solid #eee; }
+        .custom-option:hover { background: #f0f0f0; color: var(--accent); }
+        
+        @keyframes selectFadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        
         .indicator-loading { display: none; }
         .htmx-request .indicator-default { display: none; }
         .htmx-request .indicator-loading { display: flex; }
     </style>
 </head>
-<body>
+<body class="p-4">
     <div id="form-container" class="w-full max-w-md mx-auto space-y-8">
-        
-        <div class="neo-card p-6">
+        <div class="neo-card p-8">
             <div class="neo-card-content">
-                <div class="flex items-center justify-between mb-6">
-                    <h1 class="text-xl font-bold text-black uppercase">Support</h1>
-                    <div class="w-8 h-8 rounded-full border-2 border-black bg-white flex items-center justify-center shadow-[2px_2px_0px_#000]">
-                        <span class="text-xs">🤖</span>
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h1 class="text-2xl font-bold text-black tracking-tight uppercase">Kawaii</h1>
+                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[3px]">Service Support</p>
                     </div>
+                    <div class="w-10 h-10 rounded-full border-2 border-black neo-avatar shadow-[3px_3px_0px_#000000]"></div>
                 </div>
                 
-                <form hx-post="{% url 'submit_feedback' %}" hx-target="#form-container" class="space-y-4">
+                <form id="feedback-form" hx-post="{% url 'submit_feedback' %}" hx-target="#form-container" hx-swap="innerHTML transition:true" class="space-y-6">
                     {% csrf_token %}
                     <input type="hidden" name="user_id" id="user_id">
                     <input type="hidden" name="username" id="username">
                     <input type="hidden" name="category" id="category_input" value="news">
 
-                    <div class="custom-select-wrapper neo-input" id="custom-select">
-                        <div class="flex items-center justify-between p-3 font-bold text-[10px] text-black uppercase tracking-wider">
-                            <span id="selected-text">Yangilik yuborish</span>
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
-                        </div>
-                        <div class="custom-options" id="select-options">
-                            <div class="custom-option" data-value="news">Yangilik yuborish</div>
-                            <div class="custom-option" data-value="ads">Reklama joylashtirish</div>
-                            <div class="custom-option" data-value="report">Shikoyat qilish</div>
-                            <div class="custom-option" data-value="collab">Hamkorlik</div>
-                            <div class="custom-option" data-value="other">Boshqa</div>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold ml-2 text-gray-500 uppercase tracking-widest">Kategoriya</label>
+                        <div class="custom-select-wrapper neo-input" id="custom-select">
+                            <div class="custom-select-trigger">
+                                <span id="selected-text">Yangilik yuborish</span>
+                                <svg class="w-4 h-4 transition-transform duration-300" id="select-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                            <div class="custom-options" id="select-options">
+                                <div class="custom-option" data-value="news">Yangilik yuborish</div>
+                                <div class="custom-option" data-value="ads">Reklama joylashtirish</div>
+                                <div class="custom-option" data-value="report">Shikoyat qilish</div>
+                                <div class="custom-option" data-value="collab">Hamkorlik</div>
+                                <div class="custom-option" data-value="other">Boshqa</div>
+                            </div>
                         </div>
                     </div>
 
-                    <textarea name="text" placeholder="Xabaringizni yozing..." required 
-                        class="neo-input w-full p-4 h-24 text-sm font-bold focus:outline-none resize-none"></textarea>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold ml-2 text-gray-500 uppercase tracking-widest">Xabar matni</label>
+                        <textarea name="text" placeholder="Fikringizni yozing..." required 
+                            class="neo-input w-full p-4 bg-gray-50/50 text-black h-36 resize-none focus:outline-none text-sm font-bold"></textarea>
+                    </div>
 
-                    <button type="submit" id="submit-btn" class="neo-btn w-full py-4 font-bold text-xs">
-                        <span class="indicator-default text-white">Yuborish</span>
-                        <span class="indicator-loading text-white">Yuborilmoqda...</span>
+                    <button type="submit" id="submit-btn" class="neo-btn w-full py-5 font-bold text-sm flex items-center justify-center">
+                        <span class="indicator-default">Yuborish</span>
+                        <div class="indicator-loading items-center space-x-2">
+                            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>Yuborilmoqda...</span>
+                        </div>
                     </button>
                 </form>
             </div>
         </div>
 
         {% if history %}
-        <div class="space-y-10 pb-10">
-            <h3 class="text-[9px] font-bold uppercase tracking-[3px] text-white/40 ml-2">Murojaatlar tarixi</h3>
+        <div class="space-y-4 pb-10 animate-in fade-in slide-in-from-bottom-5 duration-700">
+            <h3 class="text-[10px] font-bold uppercase tracking-[3px] text-white/50 pl-2">Mening murojaatlarim</h3>
             
             {% for item in history %}
-            <div class="chat-container">
-                <div class="bubble user-bubble">
-                    <div class="flex justify-between items-center mb-1 border-b border-black/10 pb-1">
-                        <span class="text-[8px] font-bold uppercase">{{ item.category }}</span>
-                        <span class="text-[8px] opacity-50">{{ item.created_at|date:"H:i" }}</span>
+            <div class="history-card overflow-hidden">
+                
+                <div class="p-5 cursor-pointer" onclick="toggleCard(this)">
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="text-[9px] px-2 py-1 bg-[#ad88b9] text-white rounded-lg uppercase font-bold tracking-tighter border border-black shadow-[2px_2px_0px_#000000]">{{ item.category }}</span>
+                        <span class="text-[8px] text-white/40 uppercase font-bold">{{ item.created_at|date:"d.m.Y H:i" }}</span>
                     </div>
-                    {{ item.text }}
+                    <p class="preview-text text-white/90 text-xs font-medium leading-relaxed truncate">
+                        {{ item.text }}
+                    </p>
+                    <div class="flex justify-center mt-2 opacity-30">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
                 </div>
 
-                {% if item.reply_text %}
-                <div class="bubble admin-bubble">
-                    <div class="text-[8px] font-bold uppercase mb-1 border-b border-white/20 pb-1">Support Response</div>
-                    {{ item.reply_text }}
-                </div>
-                {% endif %}
+                <div class="expanded-content hidden px-5 pb-5 border-t border-white/10 pt-4">
+                    <div class="mb-4">
+                        <span class="text-[8px] font-bold uppercase text-white/40 tracking-widest block mb-1">Xabar to'liq:</span>
+                        <p class="text-white/90 text-xs font-medium leading-relaxed">{{ item.text }}</p>
+                    </div>
+                    
+                    {% if item.reply_text %} 
+                    <div class="mt-3 pt-3 border-t border-black/20 mb-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="text-[9px] font-bold uppercase text-[#ad88b9] tracking-widest">Admin javobi:</span>
+                        </div>
+                        <div class="bg-white/10 p-3 rounded-xl border border-black/10 text-xs italic text-white/80">
+                            {{ item.reply_text }}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="flex items-center space-x-2 mt-2 mb-4">
+                        <div class="w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse shadow-[0_0_8px_#eab308]"></div>
+                        <span class="text-[9px] font-bold uppercase text-yellow-500 tracking-widest">Ko'rib chiqilmoqda...</span>
+                    </div>
+                    {% endif %}
 
-                <div class="flex justify-between items-center px-2">
-                    <div class="flex items-center space-x-2">
+                    <div class="flex justify-between items-center border-t border-white/10 pt-4">
                         {% if not item.is_closed %}
-                            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#22c55e]"></div>
-                            <span class="text-[9px] font-bold uppercase text-green-500">Ochiq</span>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#22c55e]"></div>
+                                <span class="text-[9px] font-bold uppercase text-green-500 tracking-widest">Ochiq</span>
+                            </div>
+                            
+                            <button hx-post="{% url 'close_ticket' item.id %}" 
+                                    hx-target="#form-container"
+                                    class="text-[9px] font-bold bg-[#ad88b9] text-white px-3 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] active:translate-y-0.5 active:shadow-none transition-all uppercase tracking-wider">
+                                Masalani yopish
+                            </button>
                         {% else %}
-                            <span class="text-[9px] font-bold uppercase text-gray-500">✅ Yopilgan</span>
+                            <span class="text-[9px] font-bold uppercase text-gray-500 tracking-widest">✅ Yopilgan</span>
                         {% endif %}
                     </div>
-
-                    {% if not item.is_closed %}
-                    <button hx-post="/feedback/close/{{ item.id }}/" 
-                            hx-target="#form-container"
-                            class="text-[9px] font-bold bg-white/5 px-3 py-1.5 rounded-lg border border-white/20 hover:bg-white/10 active:scale-95 transition-all">
-                        Masalani yopish
-                    </button>
-                    {% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -158,44 +213,84 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
+        tg.setHeaderColor('#0c0a14');
 
-        // Custom Select Logic
+        // Logic Select
         const selectWrapper = document.getElementById('custom-select');
         const optionsList = document.getElementById('select-options');
         const selectedText = document.getElementById('selected-text');
         const categoryInput = document.getElementById('category_input');
+        const arrow = document.getElementById('select-arrow');
 
-        selectWrapper.onclick = () => {
-            optionsList.classList.toggle('show');
-            tg.HapticFeedback.impactOccurred('light');
-        };
+        if (selectWrapper) {
+            selectWrapper.addEventListener('click', (e) => {
+                optionsList.classList.toggle('show');
+                if(arrow) arrow.style.transform = optionsList.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+                tg.HapticFeedback.impactOccurred('light'); 
+            });
+        }
 
-        document.querySelectorAll('.custom-option').forEach(opt => {
-            opt.onclick = (e) => {
-                selectedText.innerText = opt.innerText;
-                categoryInput.value = opt.dataset.value;
+        document.querySelectorAll('.custom-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const val = e.target.getAttribute('data-value');
+                selectedText.innerText = e.target.innerText;
+                categoryInput.value = val;
                 optionsList.classList.remove('show');
+                if(arrow) arrow.style.transform = 'rotate(0deg)';
                 tg.HapticFeedback.selectionChanged();
                 e.stopPropagation();
-            };
+            });
         });
 
+        // Аккордеон: функция открытия/закрытия карточки
+        window.toggleCard = function(element) {
+            const card = element.closest('.history-card');
+            const content = card.querySelector('.expanded-content');
+            const preview = card.querySelector('.preview-text');
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                preview.classList.add('hidden'); // прячем обрезанный текст
+            } else {
+                content.classList.add('hidden');
+                preview.classList.remove('hidden'); // показываем обрезанный текст
+            }
+            tg.HapticFeedback.impactOccurred('light'); // приятная вибрация при открытии
+        };
+
+        // App Init
         function initApp() {
             const user = tg.initDataUnsafe?.user;
             if (user && user.id) {
-                document.getElementById('user_id').value = user.id;
-                document.getElementById('username').value = user.username || "anonymous";
+                const uId = document.getElementById('user_id');
+                const uName = document.getElementById('username');
+                if(uId) uId.value = user.id;
+                if(uName) uName.value = user.username || "anonymous";
+
                 const urlParams = new URLSearchParams(window.location.search);
                 if (!urlParams.has('user_id')) {
-                    window.location.replace(window.location.pathname + `?user_id=${user.id}`);
+                    const newUrl = window.location.pathname + `?user_id=${user.id}`;
+                    window.location.replace(newUrl);
                 }
             }
         }
         initApp();
 
-        document.body.addEventListener('htmx:configRequest', () => tg.HapticFeedback.impactOccurred('medium'));
-        document.body.addEventListener('htmx:afterRequest', (e) => {
-            if (e.detail.successful) tg.HapticFeedback.notificationOccurred('success');
+        // HTMX Handling with Haptics
+        document.body.addEventListener('htmx:configRequest', (event) => { 
+            tg.HapticFeedback.impactOccurred('medium'); 
+            const btn = document.querySelector('#submit-btn');
+            if (btn) btn.disabled = true;
+        });
+
+        document.body.addEventListener('htmx:afterRequest', (event) => {
+            if (event.detail.successful) {
+                tg.HapticFeedback.notificationOccurred('success'); 
+            } else {
+                tg.HapticFeedback.notificationOccurred('error'); 
+                const btn = document.querySelector('#submit-btn');
+                if (btn) btn.disabled = false;
+            }
         });
     </script>
 </body>
