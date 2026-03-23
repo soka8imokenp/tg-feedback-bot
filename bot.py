@@ -20,10 +20,10 @@ dp = Dispatcher()
 @dp.message(Command("start"))
 async def start(message: types.Message):
     markup = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✍️ Написать обращение", web_app=WebAppInfo(url=WEBAPP_URL))]
+        [InlineKeyboardButton(text="✍️ Murojaat qoldirish", web_app=WebAppInfo(url=WEBAPP_URL))]
     ])
     await message.answer(
-        "Привет! Нажми на кнопку ниже, чтобы оставить заявку или задать вопрос.", 
+        "Salom! Pastdagi tugmani bosing va murojaat qoldiring yoki savol bering.", 
         reply_markup=markup
     )
 
@@ -57,11 +57,11 @@ async def handle_admin_reply(message: types.Message):
                 pass
 
 async def main():
-    print("Бот запущен и готов к работе...")
+    print("Bot ishga tushdi va ishlashga tayyor...")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("Бот выключен")
+        print("Bot o‘chirildi")
