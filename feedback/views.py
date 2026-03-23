@@ -15,7 +15,6 @@ def get_history_context(user_id, limit=5, offset=0):
     Вспомогательная функция для получения истории и флагов пагинации.
     """
     total_count = Application.objects.filter(user_id=user_id).count()
-    # Сначала открытые, потом закрытые. Внутри групп - самые новые сверху.
     history = Application.objects.filter(user_id=user_id).order_by('is_closed', '-updated_at')[offset:offset + limit]
     
     new_offset = offset + limit
@@ -40,19 +39,13 @@ def index(request):
     return render(request, 'feedback/index.html', context)
 
 def load_more_tickets(request):
-    """
-    Возвращает только блок с дополнительными старыми тикетами.
-    """
     user_id = request.GET.get('user_id')
     offset = int(request.GET.get('offset', 0))
     limit = 5
-    
     if not user_id:
         return HttpResponse("")
 
     context = get_history_context(user_id, limit=limit, offset=offset)
-    
-    # Используем partial-шаблон (в нем только цикл for по history и кнопка Yana yuklash)
     return render(request, 'feedback/partials/ticket_list.html', context)
 
 def close_ticket(request, ticket_id):
@@ -61,20 +54,22 @@ def close_ticket(request, ticket_id):
         ticket.is_closed = True
         ticket.save()
         
-        # После закрытия возвращаем обновленный список тикетов для пользователя
         user_id = request.POST.get('user_id') or ticket.user_id
         context = get_history_context(user_id)
         return render(request, 'feedback/index.html', context)
     return HttpResponse("Metod xato", status=400)
 
 def reply_ticket(request, ticket_id):
+    """
+    Когда клиент дописывает сообщение в Web App.
+    """
     if request.method == 'POST':
         ticket = get_object_or_404(Application, id=ticket_id)
         new_reply = request.POST.get('new_reply')
         
         if new_reply and not ticket.is_closed:
             message_obj = {
-                'role': 'user',
+                'role': 'user', # Роль пользователя
                 'text': new_reply,
                 'time': timezone.now().strftime("%H:%M")
             }
@@ -87,7 +82,7 @@ def reply_ticket(request, ticket_id):
             ticket.is_answered = False 
             ticket.save()
             
-            # Отправка в Telegram
+            # Уведомление админу (Без кнопок, лаконично)
             url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
             tg_message = (
                 f"💬 <b>#id{ticket.user_id} dan yangi xabar!</b>\n"
@@ -107,10 +102,13 @@ def reply_ticket(request, ticket_id):
     return HttpResponse("Metod xato", status=400)
 
 def submit_feedback(request):
+    """
+    Создание нового тикета с ТЕМ САМЫМ КРАСИВЫМ ДИЗАЙНОМ.
+    """
     if request.method == 'POST':
         user_id = request.POST.get('user_id', 'Unknown')
         
-        # Анти-спам проверка
+        # Анти-спам с иконкой часов
         last_app = Application.objects.filter(user_id=user_id).order_by('-created_at').first()
         if last_app:
             time_passed = timezone.now() - last_app.created_at
@@ -135,21 +133,13 @@ def submit_feedback(request):
         subject = request.POST.get('subject', "Mavzu ko'rsatilmadi")
         text = request.POST.get('text')
 
-        initial_history = [{
-            'role': 'user',
-            'text': text,
-            'time': timezone.now().strftime("%H:%M")
-        }]
-
         Application.objects.create(
-            user_id=user_id,
-            username=username,
-            category=category,
-            subject=subject,
-            chat_history=initial_history
+            user_id=user_id, username=username,
+            category=category, subject=subject,
+            chat_history=[{'role': 'user', 'text': text, 'time': timezone.now().strftime("%H:%M")}]
         )
 
-        # Конфиг для уведомления в ТГ
+        # Конфиг для уведомления админа (иконки по категориям)
         category_config = {
             'news': ('📢', 'YANGILIK'),
             'ads': ('💰', 'REKLAMA'),
@@ -173,10 +163,10 @@ def submit_feedback(request):
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
         try:
             requests.post(url, data={"chat_id": ADMIN_ID, "text": message, "parse_mode": "HTML"}, timeout=5)
-        except Exception as e:
-            print(f"Telegram error: {e}")
+        except:
+            pass
 
-        # Ответ об успехе
+        # ВОТ ОН - ТОТ САМЫЙ КРАСИВЫЙ ОТВЕТ С ГАЛОЧКОЙ И АНИМАЦИЕЙ
         return HttpResponse(f'''
             <div id="form-container" class="flex flex-col items-center justify-center h-screen space-y-6 p-8 bg-[#0c0a14]">
                 <script>window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');</script>
