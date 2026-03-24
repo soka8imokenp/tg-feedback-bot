@@ -15,43 +15,25 @@
             background-color: var(--dark-bg);
             font-family: 'Unbounded', sans-serif;
             margin: 0; min-height: 100vh; color: white;
-            /* Скрываем прокрутку, пока идет загрузка */
             overflow: hidden; 
         }
 
-        /* --- СТИЛИ ПРЕДЗАГРУЗЧИКА --- */
+        /* --- PRELOADER --- */
         #preloader {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: var(--dark-bg);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease, visibility 0.5s;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--dark-bg); display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
+            z-index: 9999; transition: opacity 0.5s ease, visibility 0.5s;
         }
-
         .loader-spinner {
-            width: 45px;
-            height: 45px;
-            border: 4px solid rgba(173, 136, 185, 0.1);
-            border-left-color: var(--accent);
-            border-radius: 50%;
+            width: 45px; height: 45px; border: 4px solid rgba(173, 136, 185, 0.1);
+            border-left-color: var(--accent); border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #preloader.fade-out { opacity: 0; visibility: hidden; }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        #preloader.fade-out {
-            opacity: 0;
-            visibility: hidden;
-        }
-        /* --------------------------- */
-
+        /* --- CARDS & UI --- */
         .neo-card {
             position: relative;
             background-image: url("{% static 'feedback/kawaii.png' %}");
@@ -83,6 +65,19 @@
             backdrop-filter: blur(10px);
         }
 
+        /* --- ANIMATIONS --- */
+        .header-transition {
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .chat-container { max-height: 350px; overflow-y: auto; scrollbar-width: none; }
+        .chat-container::-webkit-scrollbar { display: none; }
+        .bubble-user { background-color: var(--accent); border: 2px solid #000; border-radius: 18px 18px 0 18px; }
+        .bubble-admin { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 18px 18px 18px 0; }
+        .preserve-lines { white-space: pre-wrap; word-break: break-all; }
+        .hidden { display: none !important; }
+
+        /* Custom Select */
         .custom-options { 
             display: none; position: absolute; top: 100%; left: 0; right: 0; 
             background: white; border: 2px solid #000; border-radius: 20px; z-index: 50; 
@@ -92,54 +87,11 @@
         .custom-option { transition: all 0.2s ease; cursor: pointer; color: black; }
         .custom-option:hover { background-color: #eeeeee !important; color: var(--accent) !important; }
 
-        @keyframes pulse-green {
-            0% { box-shadow: 0 0 0 0px rgba(34, 197, 94, 0.7); }
-            70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-            100% { box-shadow: 0 0 0 0px rgba(34, 197, 94, 0); }
-        }
-        @keyframes pulse-yellow {
-            0% { box-shadow: 0 0 0 0px rgba(234, 179, 8, 0.7); }
-            70% { box-shadow: 0 0 0 8px rgba(234, 179, 8, 0); }
-            100% { box-shadow: 0 0 0 0px rgba(234, 179, 8, 0); }
-        }
         .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 6px; }
         .status-open .dot { background-color: #22c55e; animation: pulse-green 2s infinite; }
         .status-pending .dot { background-color: #eab308; animation: pulse-yellow 2s infinite; }
-        .status-closed .dot { background-color: #6b7280; }
-
-        .chat-container { max-height: 350px; overflow-y: auto; scrollbar-width: none; }
-        .chat-container::-webkit-scrollbar { display: none; }
-        .bubble-user { background-color: var(--accent); border: 2px solid #000; border-radius: 18px 18px 0 18px; }
-        .bubble-admin { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 18px 18px 18px 0; }
-        .preserve-lines { white-space: pre-wrap; word-break: break-all; }
-        .hidden { display: none !important; }
-
-        @keyframes floating {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-12px); }
-            100% { transform: translateY(0px); }
-        }
-        .animate-float { animation: floating 3s ease-in-out infinite; }
-        
-        #bunny-speech {
-            position: absolute; top: -15px; right: 10px;
-            background: white; color: black; padding: 10px 18px;
-            border: 3px solid #000;
-            border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
-            font-size: 10px; font-weight: 900; z-index: 50;
-            box-shadow: 4px 4px 0px #000;
-            opacity: 0; 
-            transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform: translateY(15px) scale(0.8); 
-            pointer-events: none;
-            display: flex; align-items: center; justify-content: center; text-align: center;
-        }
-        #bunny-speech::after {
-            content: ''; position: absolute; bottom: -11px; right: 22px;
-            width: 14px; height: 14px; background: white;
-            border-right: 3px solid #000; border-bottom: 3px solid #000;
-            transform: rotate(45deg);
-        }
+        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0px rgba(34, 197, 94, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0px rgba(34, 197, 94, 0); } }
+        @keyframes pulse-yellow { 0% { box-shadow: 0 0 0 0px rgba(234, 179, 8, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(234, 179, 8, 0); } 100% { box-shadow: 0 0 0 0px rgba(234, 179, 8, 0); } }
     </style>
 </head>
 <body class="p-4">
@@ -175,14 +127,18 @@
             </div>
             {% else %}
             <div class="neo-card p-8 relative">
-                
-                <div id="bunny-speech">...</div>
-
                 <div class="neo-card-content">
                     <div class="flex items-center justify-between mb-8">
                         <div>
                             <h1 class="text-2xl font-bold text-black uppercase">Kawaii</h1>
-                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[3px]">Service Support</p>
+                            <div class="relative h-4 mt-1">
+                                <p id="service-tag" class="header-transition absolute inset-0 text-[10px] text-gray-500 font-bold uppercase tracking-[3px]">
+                                    Service Support
+                                </p>
+                                <p id="bunny-status" class="header-transition absolute inset-0 text-[9px] text-[#ad88b9] font-bold uppercase tracking-[1px] opacity-0 translate-y-2 scale-90 pointer-events-none">
+                                    ...
+                                </p>
+                            </div>
                         </div>
                         <div class="w-10 h-10 rounded-full border-2 border-black neo-avatar shadow-[3px_3px_0px_#000000]"></div>
                     </div>
@@ -234,13 +190,7 @@
             <div id="history-section" class="space-y-4 pb-10">
                 <div class="flex items-center justify-between px-2">
                     <h3 class="text-[10px] font-bold uppercase tracking-[3px] text-white/50">Mening murojaatlarim</h3>
-                    
-                    <button 
-                        hx-get="{% url 'load_more_tickets' %}?user_id={{ user_id }}&offset=0" 
-                        hx-target="#history-list-container" 
-                        hx-swap="innerHTML"
-                        onclick="tg.HapticFeedback.impactOccurred('light')"
-                        class="text-[#ad88b9] text-[9px] font-bold uppercase flex items-center gap-1 active:scale-90 transition-transform">
+                    <button hx-get="{% url 'load_more_tickets' %}?user_id={{ user_id }}&offset=0" hx-target="#history-list-container" hx-swap="innerHTML" onclick="tg.HapticFeedback.impactOccurred('light')" class="text-[#ad88b9] text-[9px] font-bold uppercase flex items-center gap-1 active:scale-90 transition-transform">
                         <span>Yopish</span>
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7"></path></svg>
                     </button>
@@ -265,9 +215,7 @@
                                     <div class="flex flex-col {% if msg.role == 'user' %}items-end{% else %}items-start{% endif %}">
                                         <div class="{% if msg.role == 'user' %}bubble-user shadow-[3px_3px_0px_#000]{% else %}bubble-admin{% endif %} p-3 max-w-[85%]">
                                             <p class="text-[11px] font-bold preserve-lines text-white leading-relaxed">{{ msg.text }}</p>
-                                            <span class="text-[7px] opacity-40 mt-1 block font-bold local-time-msg" data-utc="{{ msg.time }}">
-                                                {{ msg.time }}
-                                            </span>
+                                            <span class="text-[7px] opacity-40 mt-1 block font-bold local-time-msg" data-utc="{{ msg.time }}">{{ msg.time }}</span>
                                         </div>
                                     </div>
                                 {% endfor %}
@@ -299,12 +247,7 @@
                     {% endfor %}
                     
                     {% if has_more_tickets %}
-                    <button id="load-more-btn"
-                            hx-get="{% url 'load_more_tickets' %}?offset={{ next_offset }}&user_id={{ user_id }}"
-                            hx-target="this" 
-                            hx-swap="outerHTML"
-                            onclick="tg.HapticFeedback.impactOccurred('medium')"
-                            class="neo-btn w-full py-4 mt-4 text-[10px] font-bold uppercase !bg-transparent border-2 !border-white/20 !text-white !shadow-[4px_4px_0px_rgba(255,255,255,0.2)] active:!shadow-[0px_0px_0px_rgba(255,255,255,0.2)]">
+                    <button id="load-more-btn" hx-get="{% url 'load_more_tickets' %}?offset={{ next_offset }}&user_id={{ user_id }}" hx-target="this" hx-swap="outerHTML" onclick="tg.HapticFeedback.impactOccurred('medium')" class="neo-btn w-full py-4 mt-4 text-[10px] font-bold uppercase !bg-transparent border-2 !border-white/20 !text-white !shadow-[4px_4px_0px_rgba(255,255,255,0.2)] active:!shadow-[0px_0px_0px_rgba(255,255,255,0.2)]">
                         Yana yuklash
                     </button>
                     {% endif %}
@@ -315,15 +258,12 @@
     </div>
 
     <script>
-        // ЛОГИКА ПРЕДЗАГРУЗЧИКА
+        // PRELOADER
         window.addEventListener('load', function() {
             const preloader = document.getElementById('preloader');
             preloader.classList.add('fade-out');
-            document.body.style.overflow = 'auto'; // Включаем скролл обратно
-            
-            setTimeout(() => {
-                preloader.remove(); // Убираем из структуры документа
-            }, 500);
+            document.body.style.overflow = 'auto';
+            setTimeout(() => { preloader.remove(); }, 500);
         });
 
         const tg = window.Telegram.WebApp;
@@ -350,6 +290,50 @@
                     }
                 }
             });
+        }
+
+        // --- NEW BUNNY INTERACTION LOGIC ---
+        const bunnyPhrases = [
+            "Yana savolmi? Charchadim-ku... ☕",
+            "Adminlar xabaringizni o'qishmoqda. 👀",
+            "Kakaoyim tugab qolyapti... 🍫",
+            "Hali ham javob kelmadimi? ✨",
+            "Yangi murojaat? Xo'p, yozing...",
+            "Bugun juda ko'p ishladim ✨"
+        ];
+
+        function startDynamicHeader() {
+            const tag = document.getElementById('service-tag');
+            const status = document.getElementById('bunny-status');
+            if (!tag || !status) return;
+
+            let phraseIndex = 0;
+
+            setInterval(() => {
+                // 1. Схлопываем Service Support
+                tag.style.opacity = '0';
+                tag.style.transform = 'translateY(-10px) scale(0.8)';
+
+                setTimeout(() => {
+                    // 2. Появляется фраза кролика
+                    status.innerText = bunnyPhrases[phraseIndex];
+                    status.style.opacity = '1';
+                    status.style.transform = 'translateY(0) scale(1)';
+                    phraseIndex = (phraseIndex + 1) % bunnyPhrases.length;
+                }, 400);
+
+                // 3. Через 6 секунд возвращаем оригинал
+                setTimeout(() => {
+                    status.style.opacity = '0';
+                    status.style.transform = 'translateY(-10px) scale(0.8)';
+                    
+                    setTimeout(() => {
+                        tag.style.opacity = '1';
+                        tag.style.transform = 'translateY(0) scale(1)';
+                    }, 400);
+                }, 6000);
+
+            }, 15000);
         }
 
         function setupLogic() {
@@ -429,43 +413,14 @@
             const welcomeScreen = document.getElementById('welcome-screen');
             const mainApp = document.getElementById('main-app');
             const startBtn = document.getElementById('start-btn');
-            const speechBubble = document.getElementById('bunny-speech');
-            const hasHistory = document.getElementById('history-section') !== null;
 
             if (startBtn) {
                 startBtn.addEventListener('click', () => {
                     welcomeScreen.classList.add('hidden');
                     mainApp.classList.remove('hidden');
-                    if (hasHistory && speechBubble) {
-                        startBunnyInteractions();
-                    }
+                    // Запуск анимации заголовка
+                    startDynamicHeader();
                 });
-            }
-
-            const bunnyPhrases = [
-                "Yana savolmi? Charchadim-ku... ☕",
-                "Adminlar xabaringizni o'qishmoqda.",
-                "Kakaoyim tugab qolyapti...",
-                "Hali ham javob kelmadimi?",
-                "Yangi murojaat? Xo'p, yozing...",
-                "Bugun juda ko'p ishladim ✨"
-            ];
-
-            function startBunnyInteractions() {
-                setInterval(() => {
-                    if (Math.random() > 0.4) {
-                        const phrase = bunnyPhrases[Math.floor(Math.random() * bunnyPhrases.length)];
-                        speechBubble.innerText = phrase;
-                        
-                        speechBubble.style.opacity = '1';
-                        speechBubble.style.transform = 'translateY(0) scale(1)';
-                        
-                        setTimeout(() => {
-                            speechBubble.style.opacity = '0';
-                            speechBubble.style.transform = 'translateY(15px) scale(0.8)';
-                        }, 5000);
-                    }
-                }, 15000);
             }
         });
     </script>
