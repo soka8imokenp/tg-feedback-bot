@@ -78,7 +78,6 @@
         .preserve-lines { white-space: pre-wrap; word-break: break-all; }
         .hidden { display: none !important; }
 
-        /* --- НОВЫЕ СТИЛИ ДЛЯ ИНТЕРАКТИВА --- */
         @keyframes floating {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-12px); }
@@ -86,19 +85,28 @@
         }
         .animate-float { animation: floating 3s ease-in-out infinite; }
         
+        /* --- ОБНОВЛЕННЫЙ СКЕТЧЕВЫЙ ПУЗЫРЬ --- */
         #bunny-speech {
-            position: absolute; top: -10px; right: 10px;
-            background: white; color: black; padding: 10px 15px;
-            border-radius: 20px; border: 2px solid #000;
-            font-size: 10px; font-weight: bold; z-index: 50;
+            position: absolute; top: -15px; right: 10px;
+            background: white; color: black; padding: 10px 18px;
+            /* Тот самый "кривой" скетчевый радиус */
+            border: 3px solid #000;
+            border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+            font-size: 10px; font-weight: 900; z-index: 50;
             box-shadow: 4px 4px 0px #000;
-            opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease;
-            transform: translateY(10px); pointer-events: none;
+            opacity: 0; 
+            /* Пружинистая анимация появления */
+            transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: translateY(15px) scale(0.8); 
+            pointer-events: none;
+            display: flex; align-items: center; justify-content: center; text-align: center;
         }
+        /* Новый хвост для скетчевого стиля */
         #bunny-speech::after {
-            content: ''; position: absolute; bottom: -8px; right: 20px;
-            border-left: 8px solid transparent; border-right: 8px solid transparent;
-            border-top: 8px solid #000;
+            content: ''; position: absolute; bottom: -11px; right: 22px;
+            width: 14px; height: 14px; background: white;
+            border-right: 3px solid #000; border-bottom: 3px solid #000;
+            transform: rotate(45deg);
         }
     </style>
 </head>
@@ -369,29 +377,23 @@
             }
         };
 
-        // --- НОВАЯ ЛОГИКА ДЛЯ ЭКРАНА И ФРАЗ ЗАЙКИ ---
         document.addEventListener('DOMContentLoaded', () => {
             const welcomeScreen = document.getElementById('welcome-screen');
             const mainApp = document.getElementById('main-app');
             const startBtn = document.getElementById('start-btn');
             const speechBubble = document.getElementById('bunny-speech');
-            
-            // Проверяем, есть ли история тикетов (наличие секции history)
             const hasHistory = document.getElementById('history-section') !== null;
 
             if (startBtn) {
                 startBtn.addEventListener('click', () => {
                     welcomeScreen.classList.add('hidden');
                     mainApp.classList.remove('hidden');
-                    
-                    // Словечки появляются только если есть история (не первый тикет)
                     if (hasHistory && speechBubble) {
                         startBunnyInteractions();
                     }
                 });
             }
 
-            // Фразы для уставшей зайки
             const bunnyPhrases = [
                 "Yana savolmi? Charchadim-ku... ☕",
                 "Adminlar xabaringizni o'qishmoqda.",
@@ -402,23 +404,20 @@
             ];
 
             function startBunnyInteractions() {
-                // Запускаем цикл фраз
                 setInterval(() => {
-                    if (Math.random() > 0.4) { // 60% шанс на фразу
+                    if (Math.random() > 0.4) {
                         const phrase = bunnyPhrases[Math.floor(Math.random() * bunnyPhrases.length)];
                         speechBubble.innerText = phrase;
                         
-                        // Показываем пузырь
                         speechBubble.style.opacity = '1';
-                        speechBubble.style.transform = 'translateY(0)';
+                        speechBubble.style.transform = 'translateY(0) scale(1)';
                         
-                        // Прячем через 5 секунд
                         setTimeout(() => {
                             speechBubble.style.opacity = '0';
-                            speechBubble.style.transform = 'translateY(10px)';
+                            speechBubble.style.transform = 'translateY(15px) scale(0.8)';
                         }, 5000);
                     }
-                }, 15000); // Проверка каждые 15 секунд
+                }, 15000);
             }
         });
     </script>
