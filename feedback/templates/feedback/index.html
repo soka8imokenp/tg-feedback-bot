@@ -15,7 +15,6 @@
             background-color: var(--dark-bg);
             font-family: 'Unbounded', sans-serif;
             margin: 0; min-height: 100vh; color: white;
-            /* Скрываем прокрутку, пока идет загрузка */
             overflow: hidden; 
         }
 
@@ -50,7 +49,6 @@
             opacity: 0;
             visibility: hidden;
         }
-        /* --------------------------- */
 
         .neo-card {
             position: relative;
@@ -114,31 +112,10 @@
         .preserve-lines { white-space: pre-wrap; word-break: break-all; }
         .hidden { display: none !important; }
 
-        @keyframes floating {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-12px); }
-            100% { transform: translateY(0px); }
-        }
-        .animate-float { animation: floating 3s ease-in-out infinite; }
-        
-        #bunny-speech {
-            position: absolute; top: -15px; right: 10px;
-            background: white; color: black; padding: 10px 18px;
-            border: 3px solid #000;
-            border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
-            font-size: 10px; font-weight: 900; z-index: 50;
-            box-shadow: 4px 4px 0px #000;
-            opacity: 0; 
-            transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform: translateY(15px) scale(0.8); 
-            pointer-events: none;
-            display: flex; align-items: center; justify-content: center; text-align: center;
-        }
-        #bunny-speech::after {
-            content: ''; position: absolute; bottom: -11px; right: 22px;
-            width: 14px; height: 14px; background: white;
-            border-right: 3px solid #000; border-bottom: 3px solid #000;
-            transform: rotate(45deg);
+        /* Эффект для тега */
+        #service-tag {
+            transition: all 0.5s ease-in-out;
+            min-height: 12px;
         }
     </style>
 </head>
@@ -175,14 +152,11 @@
             </div>
             {% else %}
             <div class="neo-card p-8 relative">
-                
-                <div id="bunny-speech">...</div>
-
                 <div class="neo-card-content">
                     <div class="flex items-center justify-between mb-8">
                         <div>
                             <h1 class="text-2xl font-bold text-black uppercase">Kawaii</h1>
-                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[3px]">Service Support</p>
+                            <p id="service-tag" class="text-[10px] text-gray-500 font-bold uppercase tracking-[3px]">Service Support</p>
                         </div>
                         <div class="w-10 h-10 rounded-full border-2 border-black neo-avatar shadow-[3px_3px_0px_#000000]"></div>
                     </div>
@@ -234,7 +208,6 @@
             <div id="history-section" class="space-y-4 pb-10">
                 <div class="flex items-center justify-between px-2">
                     <h3 class="text-[10px] font-bold uppercase tracking-[3px] text-white/50">Mening murojaatlarim</h3>
-                    
                     <button 
                         hx-get="{% url 'load_more_tickets' %}?user_id={{ user_id }}&offset=0" 
                         hx-target="#history-list-container" 
@@ -291,7 +264,7 @@
                                 </div>
                             {% else %}
                                 <div class="pt-4 border-t border-white/10 text-[8px] font-bold uppercase text-white/20 tracking-widest text-center flex items-center justify-center">
-                                   <span class="mr-2">🔒</span> Murojaat yopilgan
+                                    <span class="mr-2">🔒</span> Murojaat yopilgan
                                 </div>
                             {% endif %}
                         </div>
@@ -319,11 +292,8 @@
         window.addEventListener('load', function() {
             const preloader = document.getElementById('preloader');
             preloader.classList.add('fade-out');
-            document.body.style.overflow = 'auto'; // Включаем скролл обратно
-            
-            setTimeout(() => {
-                preloader.remove(); // Убираем из структуры документа
-            }, 500);
+            document.body.style.overflow = 'auto';
+            setTimeout(() => { preloader.remove(); }, 500);
         });
 
         const tg = window.Telegram.WebApp;
@@ -332,6 +302,44 @@
         tg.setHeaderColor('#0c0a14');
 
         let activeTicketId = null;
+
+        // ЛОГИКА СМЕНЫ ТЕКСТА
+        const serviceTag = document.getElementById('service-tag');
+        const defaultTag = "Service Support";
+        const bunnyPhrases = [
+            "Yana savolmi? Charchadim-ku... ☕",
+            "Adminlar xabaringizni o'qishmoqda.",
+            "Kakaoyim tugab qolyapti...",
+            "Hali ham javob kelmadimi?",
+            "Yangi murojaat? Xo'p, yozing...",
+            "Bugun juda ko'p ishladim ✨"
+        ];
+        let showBunnyText = false;
+
+        function rotateTagText() {
+            if(!serviceTag) return;
+            serviceTag.style.opacity = '0';
+            serviceTag.style.transform = 'translateY(-3px)';
+
+            setTimeout(() => {
+                if (showBunnyText) {
+                    const phrase = bunnyPhrases[Math.floor(Math.random() * bunnyPhrases.length)];
+                    serviceTag.innerText = phrase;
+                    serviceTag.style.color = '#ad88b9';
+                    serviceTag.style.letterSpacing = 'normal';
+                } else {
+                    serviceTag.innerText = defaultTag;
+                    serviceTag.style.color = '';
+                    serviceTag.style.letterSpacing = '3px';
+                }
+                serviceTag.style.opacity = '1';
+                serviceTag.style.transform = 'translateY(0)';
+                showBunnyText = !showBunnyText;
+            }, 500);
+        }
+
+        // Запуск интервала (3 минуты)
+        setInterval(rotateTagText, 180000);
 
         function updateAllTimes() {
             document.querySelectorAll('.local-time, .local-time-msg').forEach(el => {
@@ -425,49 +433,13 @@
             }
         };
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const welcomeScreen = document.getElementById('welcome-screen');
-            const mainApp = document.getElementById('main-app');
-            const startBtn = document.getElementById('start-btn');
-            const speechBubble = document.getElementById('bunny-speech');
-            const hasHistory = document.getElementById('history-section') !== null;
-
-            if (startBtn) {
-                startBtn.addEventListener('click', () => {
-                    welcomeScreen.classList.add('hidden');
-                    mainApp.classList.remove('hidden');
-                    if (hasHistory && speechBubble) {
-                        startBunnyInteractions();
-                    }
-                });
-            }
-
-            const bunnyPhrases = [
-                "Yana savolmi? Charchadim-ku... ☕",
-                "Adminlar xabaringizni o'qishmoqda.",
-                "Kakaoyim tugab qolyapti...",
-                "Hali ham javob kelmadimi?",
-                "Yangi murojaat? Xo'p, yozing...",
-                "Bugun juda ko'p ishladim ✨"
-            ];
-
-            function startBunnyInteractions() {
-                setInterval(() => {
-                    if (Math.random() > 0.4) {
-                        const phrase = bunnyPhrases[Math.floor(Math.random() * bunnyPhrases.length)];
-                        speechBubble.innerText = phrase;
-                        
-                        speechBubble.style.opacity = '1';
-                        speechBubble.style.transform = 'translateY(0) scale(1)';
-                        
-                        setTimeout(() => {
-                            speechBubble.style.opacity = '0';
-                            speechBubble.style.transform = 'translateY(15px) scale(0.8)';
-                        }, 5000);
-                    }
-                }, 15000);
-            }
-        });
+        const startBtn = document.getElementById('start-btn');
+        if (startBtn) {
+            startBtn.addEventListener('click', () => {
+                document.getElementById('welcome-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+            });
+        }
     </script>
 </body>
 </html>
