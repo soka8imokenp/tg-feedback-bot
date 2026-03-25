@@ -15,46 +15,29 @@
             background-color: var(--dark-bg);
             font-family: 'Unbounded', sans-serif;
             margin: 0; min-height: 100vh; color: white;
-            /* Скрываем прокрутку, пока идет загрузка */
             overflow: hidden; 
         }
 
-        /* --- СТИЛИ ПРЕДЗАГРУЗЧИКА --- */
         #preloader {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: var(--dark-bg);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--dark-bg); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 9999;
             transition: opacity 0.5s ease, visibility 0.5s;
         }
 
         .loader-spinner {
-            width: 45px;
-            height: 45px;
+            width: 45px; height: 45px;
             border: 4px solid rgba(173, 136, 185, 0.1);
             border-left-color: var(--accent);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        #preloader.fade-out {
-            opacity: 0;
-            visibility: hidden;
-        }
-        /* --------------------------- */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #preloader.fade-out { opacity: 0; visibility: hidden; }
 
         .neo-card {
-            position: relative;
-            background-image: url("{% static 'feedback/kawaii.png' %}");
+            position: relative; background-image: url("{% static 'feedback/kawaii.png' %}");
             background-size: cover; background-position: center;
             border: 2px solid #000000; box-shadow: 8px 8px 0px #000000;
             border-radius: 32px; overflow: hidden;
@@ -114,6 +97,28 @@
         .preserve-lines { white-space: pre-wrap; word-break: break-all; }
         .hidden { display: none !important; }
 
+        /* --- НОВЫЕ СТИЛИ ДЛЯ BUBBLE --- */
+        .speech-bubble {
+            background: white; color: black; 
+            padding: 6px 12px;
+            border: 2px solid #000;
+            font-size: 10px; font-weight: 900; z-index: 50;
+            box-shadow: 3px 3px 0px #000;
+            white-space: nowrap; /* Не дает тексту переноситься на новую строку */
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: translateY(8px) scale(0.9);
+        }
+        
+        .speech-bubble.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .bubble-center { border-radius: 16px; }
+        .bubble-left { border-radius: 16px 16px 16px 0; left: -8px; }
+
     </style>
 </head>
 <body class="p-4">
@@ -126,7 +131,11 @@
     <div id="welcome-screen" class="flex flex-col items-center justify-center min-h-[90vh] text-center w-full max-w-md mx-auto">
         <img src="{% static 'feedback/bunny_happy.png' %}" class="w-64 mb-6 drop-shadow-[0_15px_30px_rgba(173,136,185,0.4)]">
         <h1 class="text-3xl font-bold text-white mb-2 uppercase tracking-tighter">Kawaii</h1>
-        <p class="dynamic-subtitle text-[10px] text-gray-500 font-bold uppercase tracking-[2px] mb-12 min-h-[16px] transition-opacity duration-500 ease-in-out">Service Support</p>
+        
+        <div class="relative mb-12 inline-flex items-center justify-center w-full">
+            <p class="dynamic-subtitle text-[10px] text-gray-500 font-bold uppercase tracking-[2px] transition-opacity duration-500 ease-in-out">Service Support</p>
+            <div class="speech-bubble bubble-center absolute"></div>
+        </div>
         
         <button id="start-btn" onclick="tg.HapticFeedback.impactOccurred('medium')" class="neo-btn w-full py-5 text-sm font-bold uppercase tracking-widest shadow-[6px_6px_0px_#000]">
             Murojaat yaratish
@@ -154,7 +163,10 @@
                     <div class="flex items-center justify-between mb-8">
                         <div>
                             <h1 class="text-2xl font-bold text-black uppercase">Kawaii</h1>
-                            <p class="dynamic-subtitle text-[10px] text-gray-500 font-bold uppercase tracking-[2px] min-h-[16px] transition-opacity duration-500 ease-in-out">Service Support</p>
+                            <div class="relative inline-flex items-center mt-1 w-full">
+                                <p class="dynamic-subtitle text-[10px] text-gray-500 font-bold uppercase tracking-[2px] transition-opacity duration-500 ease-in-out">Service Support</p>
+                                <div class="speech-bubble bubble-left absolute"></div>
+                            </div>
                         </div>
                         <div class="w-10 h-10 rounded-full border-2 border-black neo-avatar shadow-[3px_3px_0px_#000000]"></div>
                     </div>
@@ -287,21 +299,15 @@
     </div>
 
     <script>
-        // ЛОГИКА ПРЕДЗАГРУЗЧИКА
         window.addEventListener('load', function() {
             const preloader = document.getElementById('preloader');
             preloader.classList.add('fade-out');
-            document.body.style.overflow = 'auto'; // Включаем скролл обратно
-            
-            setTimeout(() => {
-                preloader.remove(); // Убираем из структуры документа
-            }, 500);
+            document.body.style.overflow = 'auto'; 
+            setTimeout(() => { preloader.remove(); }, 500);
         });
 
         const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
-        tg.setHeaderColor('#0c0a14');
+        tg.ready(); tg.expand(); tg.setHeaderColor('#0c0a14');
 
         let activeTicketId = null;
 
@@ -317,9 +323,7 @@
                         const day = date.getDate().toString().padStart(2, '0');
                         const month = (date.getMonth() + 1).toString().padStart(2, '0');
                         el.innerText = `${day}.${month}.${date.getFullYear()} ${hours}:${minutes}`;
-                    } else {
-                        el.innerText = `${hours}:${minutes}`;
-                    }
+                    } else { el.innerText = `${hours}:${minutes}`; }
                 }
             });
         }
@@ -392,9 +396,7 @@
                 const container = content.querySelector('.chat-container');
                 if(container) container.scrollTop = container.scrollHeight;
                 tg.HapticFeedback.impactOccurred('light');
-            } else {
-                activeTicketId = null;
-            }
+            } else { activeTicketId = null; }
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -409,53 +411,50 @@
                 });
             }
 
-            // --- НОВАЯ ЛОГИКА АНИМАЦИИ ТЕКСТА ---
+            // --- ОБНОВЛЕННАЯ ЛОГИКА BUBBLE-АНИМАЦИИ ---
             const bunnyPhrases = [
                 "Yana savolmi? Charchadim-ku... ☕",
-                "Adminlar xabaringizni o'qishmoqda.",
+                "Adminlar o'qishmoqda.",
                 "Kakaoyim tugab qolyapti...",
-                "Hali ham javob kelmadimi?",
-                "Yangi murojaat? Xo'p, yozing...",
-                "Bugun juda ko'p ishladim ✨"
+                "Hali ham javob yo'qmi?",
+                "Yangi murojaat? Xo'p...",
+                "Bugun ko'p ishladim ✨"
             ];
             
-            const defaultText = "Service Support";
             const dynamicSubtitles = document.querySelectorAll('.dynamic-subtitle');
+            const speechBubbles = document.querySelectorAll('.speech-bubble');
 
             function startBunnyInteractions() {
                 setInterval(() => {
-                    // Шаг 1: Плавно скрываем текущий текст
+                    // 1. Плавно прячем оригинальный текст Service Support
                     dynamicSubtitles.forEach(el => el.style.opacity = '0');
 
                     setTimeout(() => {
-                        // Шаг 2: Меняем текст на случайную фразу Bunny и показываем
                         const phrase = bunnyPhrases[Math.floor(Math.random() * bunnyPhrases.length)];
-                        dynamicSubtitles.forEach(el => {
-                            el.innerText = phrase;
-                            el.style.opacity = '1';
+                        
+                        // 2. Вписываем фразу в bubble и показываем его
+                        speechBubbles.forEach(bubble => {
+                            bubble.innerText = phrase;
+                            bubble.classList.add('show');
                         });
                         
-                        // Шаг 3: Ждем 5 секунд, пока пользователь прочитает
+                        // 3. Держим фразу на экране 5 секунд
                         setTimeout(() => {
-                            // Плавно скрываем фразу Bunny
-                            dynamicSubtitles.forEach(el => el.style.opacity = '0');
+                            // Плавно скрываем bubble
+                            speechBubbles.forEach(bubble => bubble.classList.remove('show'));
                             
                             setTimeout(() => {
-                                // Возвращаем исходный текст Service Support
-                                dynamicSubtitles.forEach(el => {
-                                    el.innerText = defaultText;
-                                    el.style.opacity = '1';
-                                });
-                            }, 500); // 500мс на CSS-анимацию затухания
+                                // Возвращаем Service Support обратно
+                                dynamicSubtitles.forEach(el => el.style.opacity = '1');
+                            }, 400); // 400мс ждем исчезновения пузыря
                             
-                        }, 5000); // Фраза висит 5 секунд
+                        }, 5000); 
                         
-                    }, 500); // 500мс на начальное затухание
+                    }, 400); // 400мс ждем исчезновения оригинального текста
                     
-                }, 30000); // Весь цикл повторяется каждые 30 секунд
+                }, 30000); // Повторяем каждые 30 секунд
             }
 
-            // Запускаем анимацию сразу при загрузке
             startBunnyInteractions();
         });
     </script>
