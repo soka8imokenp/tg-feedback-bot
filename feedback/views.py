@@ -69,7 +69,7 @@ def reply_ticket(request, ticket_id):
         
         if new_reply and not ticket.is_closed:
             message_obj = {
-                'role': 'user', # Роль пользователя
+                'role': 'user',
                 'text': new_reply,
                 'time': timezone.now().strftime("%H:%M")
             }
@@ -82,7 +82,7 @@ def reply_ticket(request, ticket_id):
             ticket.is_answered = False 
             ticket.save()
             
-            # Уведомление админу (Без кнопок, лаконично)
+            # Уведомление админу
             url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
             tg_message = (
                 f"💬 <b>#id{ticket.user_id} dan yangi xabar!</b>\n"
@@ -103,12 +103,12 @@ def reply_ticket(request, ticket_id):
 
 def submit_feedback(request):
     """
-    Создание нового тикета с ТЕМ САМЫМ КРАСИВЫМ ДИЗАЙНОМ.
+    Создание нового тикета. Исправлен ответ для HTMX.
     """
     if request.method == 'POST':
         user_id = request.POST.get('user_id', 'Unknown')
         
-        # Анти-спам с иконкой часов
+        # Анти-спам
         last_app = Application.objects.filter(user_id=user_id).order_by('-created_at').first()
         if last_app:
             time_passed = timezone.now() - last_app.created_at
@@ -139,7 +139,6 @@ def submit_feedback(request):
             chat_history=[{'role': 'user', 'text': text, 'time': timezone.now().strftime("%H:%M")}]
         )
 
-        # Конфиг для уведомления админа (иконки по категориям)
         category_config = {
             'news': ('📢', 'YANGILIK'),
             'ads': ('💰', 'REKLAMA'),
@@ -166,7 +165,7 @@ def submit_feedback(request):
         except:
             pass
 
-        # ВОТ ОН - ТОТ САМЫЙ КРАСИВЫЙ ОТВЕТ С ГАЛОЧКОЙ И АНИМАЦИЕЙ
+        # Исправленный блок успеха (добавлен текст и кнопка Orqaga)
         return HttpResponse(f'''
             <div id="form-container" class="flex flex-col items-center justify-center h-screen space-y-6 p-8 bg-[#0c0a14]">
                 <script>window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');</script>
@@ -175,10 +174,13 @@ def submit_feedback(request):
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                     </svg>
                 </div>
-                <h2 class="text-2xl font-bold text-white uppercase tracking-tighter">Yuborildi!</h2>
+                <div class="text-center space-y-2">
+                    <h2 class="text-2xl font-bold text-white uppercase tracking-tighter">Yuborildi!</h2>
+                    <p class="text-[10px] text-white/50 font-bold uppercase tracking-widest">Tez orada javob beramiz</p>
+                </div>
                 <button onclick="window.Telegram.WebApp.HapticFeedback.impactOccurred('medium'); window.location.reload();" 
                         class="px-10 py-4 bg-[#ad88b9] border-2 border-black shadow-[4px_4px_0px_#000] rounded-2xl text-white font-bold uppercase text-[10px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
-                    Qaytish
+                    Orqaga
                 </button>
             </div>
         ''')
