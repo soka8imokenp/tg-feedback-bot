@@ -42,25 +42,11 @@
             border: 2px solid #000000; box-shadow: 8px 8px 0px #000000;
             border-radius: 32px; overflow: hidden;
         }
-        
-        /* Maxsus Success Card foni */
-        .success-card {
-            background-image: url("{% static 'feedback/soldier.png' %}") !important;
-            background-size: cover;
-            background-position: center;
-        }
-
         .neo-card::before {
             content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(255, 255, 255, 0.85); z-index: 0;
         }
         .neo-card-content { position: relative; z-index: 1; }
-        
-        /* Kontentni pastga surish */
-        .success-content {
-            padding-top: 60px;
-        }
-
         .neo-avatar {
             background-image: url("{% static 'feedback/logo.png' %}");
             background-size: cover; background-position: center; background-color: white;
@@ -111,13 +97,14 @@
         .preserve-lines { white-space: pre-wrap; word-break: break-all; }
         .hidden { display: none !important; }
 
+        /* --- НОВЫЕ СТИЛИ ДЛЯ BUBBLE --- */
         .speech-bubble {
             background: white; color: black; 
             padding: 6px 12px;
             border: 2px solid #000;
             font-size: 10px; font-weight: 900; z-index: 50;
             box-shadow: 3px 3px 0px #000;
-            white-space: nowrap;
+            white-space: nowrap; /* Не дает тексту переноситься на новую строку */
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -159,18 +146,19 @@
         <div id="form-container" class="w-full max-w-md mx-auto space-y-8">
             
             {% if success %}
-            <div class="neo-card success-card p-10 text-center">
-                <div class="neo-card-content success-content">
+            <div class="neo-card p-10 text-center">
+                <div class="neo-card-content">
                     <div class="w-20 h-20 bg-green-500 border-4 border-black rounded-full flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0px_#000]">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>
                     </div>
                     <h2 class="text-xl font-bold text-black uppercase mb-2">Yuborildi!</h2>
                     <p class="text-[10px] text-gray-600 font-bold uppercase mb-8">Tez orada javob beramiz</p>
-                    <button onclick="window.location.reload()" class="neo-btn w-full py-4 text-xs font-bold uppercase">Qaytish</button>
+                    <button onclick="window.location.reload()" class="neo-btn w-full py-4 text-xs font-bold uppercase">Orqaga</button>
                 </div>
             </div>
             {% else %}
             <div class="neo-card p-8 relative">
+                
                 <div class="neo-card-content">
                     <div class="flex items-center justify-between mb-8">
                         <div>
@@ -287,7 +275,7 @@
                                 </div>
                             {% else %}
                                 <div class="pt-4 border-t border-white/10 text-[8px] font-bold uppercase text-white/20 tracking-widest text-center flex items-center justify-center">
-                                    <span class="mr-2">🔒</span> Murojaat yopilgan
+                                   <span class="mr-2">🔒</span> Murojaat yopilgan
                                 </div>
                             {% endif %}
                         </div>
@@ -423,6 +411,7 @@
                 });
             }
 
+            // --- ОБНОВЛЕННАЯ ЛОГИКА BUBBLE-АНИМАЦИИ ---
             const bunnyPhrases = [
                 "Yana savolmi? Charchadim-ku... ☕",
                 "Adminlar o'qishmoqda.",
@@ -437,22 +426,35 @@
 
             function startBunnyInteractions() {
                 setInterval(() => {
+                    // 1. Плавно прячем оригинальный текст Service Support
                     dynamicSubtitles.forEach(el => el.style.opacity = '0');
+
                     setTimeout(() => {
                         const phrase = bunnyPhrases[Math.floor(Math.random() * bunnyPhrases.length)];
+                        
+                        // 2. Вписываем фразу в bubble и показываем его
                         speechBubbles.forEach(bubble => {
                             bubble.innerText = phrase;
                             bubble.classList.add('show');
                         });
+                        
+                        // 3. Держим фразу на экране 5 секунд
                         setTimeout(() => {
+                            // Плавно скрываем bubble
                             speechBubbles.forEach(bubble => bubble.classList.remove('show'));
+                            
                             setTimeout(() => {
+                                // Возвращаем Service Support обратно
                                 dynamicSubtitles.forEach(el => el.style.opacity = '1');
-                            }, 400);
+                            }, 400); // 400мс ждем исчезновения пузыря
+                            
                         }, 5000); 
-                    }, 400); 
-                }, 30000);
+                        
+                    }, 400); // 400мс ждем исчезновения оригинального текста
+                    
+                }, 30000); // Повторяем каждые 30 секунд
             }
+
             startBunnyInteractions();
         });
     </script>
