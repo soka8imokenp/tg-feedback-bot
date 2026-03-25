@@ -114,32 +114,6 @@
         .preserve-lines { white-space: pre-wrap; word-break: break-all; }
         .hidden { display: none !important; }
 
-        @keyframes floating {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-12px); }
-            100% { transform: translateY(0px); }
-        }
-        .animate-float { animation: floating 3s ease-in-out infinite; }
-        
-        #bunny-speech {
-            position: absolute; top: -15px; right: 10px;
-            background: white; color: black; padding: 10px 18px;
-            border: 3px solid #000;
-            border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
-            font-size: 10px; font-weight: 900; z-index: 50;
-            box-shadow: 4px 4px 0px #000;
-            opacity: 0; 
-            transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform: translateY(15px) scale(0.8); 
-            pointer-events: none;
-            display: flex; align-items: center; justify-content: center; text-align: center;
-        }
-        #bunny-speech::after {
-            content: ''; position: absolute; bottom: -11px; right: 22px;
-            width: 14px; height: 14px; background: white;
-            border-right: 3px solid #000; border-bottom: 3px solid #000;
-            transform: rotate(45deg);
-        }
     </style>
 </head>
 <body class="p-4">
@@ -152,7 +126,7 @@
     <div id="welcome-screen" class="flex flex-col items-center justify-center min-h-[90vh] text-center w-full max-w-md mx-auto">
         <img src="{% static 'feedback/bunny_happy.png' %}" class="w-64 mb-6 drop-shadow-[0_15px_30px_rgba(173,136,185,0.4)]">
         <h1 class="text-3xl font-bold text-white mb-2 uppercase tracking-tighter">Kawaii</h1>
-        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[4px] mb-12">Service Support</p>
+        <p class="dynamic-subtitle text-[10px] text-gray-500 font-bold uppercase tracking-[2px] mb-12 min-h-[16px] transition-opacity duration-500 ease-in-out">Service Support</p>
         
         <button id="start-btn" onclick="tg.HapticFeedback.impactOccurred('medium')" class="neo-btn w-full py-5 text-sm font-bold uppercase tracking-widest shadow-[6px_6px_0px_#000]">
             Murojaat yaratish
@@ -176,13 +150,11 @@
             {% else %}
             <div class="neo-card p-8 relative">
                 
-                <div id="bunny-speech">...</div>
-
                 <div class="neo-card-content">
                     <div class="flex items-center justify-between mb-8">
                         <div>
                             <h1 class="text-2xl font-bold text-black uppercase">Kawaii</h1>
-                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[3px]">Service Support</p>
+                            <p class="dynamic-subtitle text-[10px] text-gray-500 font-bold uppercase tracking-[2px] min-h-[16px] transition-opacity duration-500 ease-in-out">Service Support</p>
                         </div>
                         <div class="w-10 h-10 rounded-full border-2 border-black neo-avatar shadow-[3px_3px_0px_#000000]"></div>
                     </div>
@@ -429,19 +401,15 @@
             const welcomeScreen = document.getElementById('welcome-screen');
             const mainApp = document.getElementById('main-app');
             const startBtn = document.getElementById('start-btn');
-            const speechBubble = document.getElementById('bunny-speech');
-            const hasHistory = document.getElementById('history-section') !== null;
 
             if (startBtn) {
                 startBtn.addEventListener('click', () => {
                     welcomeScreen.classList.add('hidden');
                     mainApp.classList.remove('hidden');
-                    if (hasHistory && speechBubble) {
-                        startBunnyInteractions();
-                    }
                 });
             }
 
+            // --- НОВАЯ ЛОГИКА АНИМАЦИИ ТЕКСТА ---
             const bunnyPhrases = [
                 "Yana savolmi? Charchadim-ku... ☕",
                 "Adminlar xabaringizni o'qishmoqda.",
@@ -450,23 +418,45 @@
                 "Yangi murojaat? Xo'p, yozing...",
                 "Bugun juda ko'p ishladim ✨"
             ];
+            
+            const defaultText = "Service Support";
+            const dynamicSubtitles = document.querySelectorAll('.dynamic-subtitle');
 
             function startBunnyInteractions() {
                 setInterval(() => {
-                    if (Math.random() > 0.4) {
+                    // Шаг 1: Плавно скрываем текущий текст
+                    dynamicSubtitles.forEach(el => el.style.opacity = '0');
+
+                    setTimeout(() => {
+                        // Шаг 2: Меняем текст на случайную фразу Bunny и показываем
                         const phrase = bunnyPhrases[Math.floor(Math.random() * bunnyPhrases.length)];
-                        speechBubble.innerText = phrase;
+                        dynamicSubtitles.forEach(el => {
+                            el.innerText = phrase;
+                            el.style.opacity = '1';
+                        });
                         
-                        speechBubble.style.opacity = '1';
-                        speechBubble.style.transform = 'translateY(0) scale(1)';
-                        
+                        // Шаг 3: Ждем 5 секунд, пока пользователь прочитает
                         setTimeout(() => {
-                            speechBubble.style.opacity = '0';
-                            speechBubble.style.transform = 'translateY(15px) scale(0.8)';
-                        }, 5000);
-                    }
-                }, 15000);
+                            // Плавно скрываем фразу Bunny
+                            dynamicSubtitles.forEach(el => el.style.opacity = '0');
+                            
+                            setTimeout(() => {
+                                // Возвращаем исходный текст Service Support
+                                dynamicSubtitles.forEach(el => {
+                                    el.innerText = defaultText;
+                                    el.style.opacity = '1';
+                                });
+                            }, 500); // 500мс на CSS-анимацию затухания
+                            
+                        }, 5000); // Фраза висит 5 секунд
+                        
+                    }, 500); // 500мс на начальное затухание
+                    
+                }, 30000); // Весь цикл повторяется каждые 30 секунд
             }
+
+            // Запускаем анимацию сразу при загрузке
+            startBunnyInteractions();
         });
     </script>
 </body>
