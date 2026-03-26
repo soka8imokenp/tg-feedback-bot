@@ -327,7 +327,7 @@
         </div>
     </div>
 
-    closed-ticket-modal
+    <div id="confirm-modal">
         <div class="modal-box text-center">
             <img src="{% static 'feedback/huh.png' %}" class="w-20 mx-auto mb-4">
             <h3 class="text-black font-bold text-sm uppercase mb-2">Aniqmi?</h3>
@@ -376,7 +376,6 @@
         const CLOSED_TICKETS_INITIALIZED_KEY = 'kawaii_closed_ticket_ids_initialized';
         let closedTicketDetectionSource = 'init';
         
-
         // Modal Logic
         window.showConfirmModal = function(url, userId, token) {
             currentActionUrl = url;
@@ -404,11 +403,8 @@
                 headers: { 'X-CSRFToken': currentToken }
             });
 
-            // Показываем подтверждение закрытия сразу после действия пользователя.
             showClosedTicketModal();
         };
-
-        
 
         function showClosedTicketModal() {
             const modal = document.getElementById('closed-ticket-modal');
@@ -518,11 +514,8 @@
                 const url = new URL(window.location.href);
                 if (!url.searchParams.has('user_id')) {
                     url.searchParams.set('user_id', uId);
-                    // Без этого сервер не получает user_id на первом входе,
-                    // поэтому история тикетов появляется только после ручного reload.
                     window.location.replace(url.toString());
                     return;
-
                 }
             }
 
@@ -563,12 +556,10 @@
 
         // Initial setup
         setupLogic();
-        // Защита от падения всего скрипта, если polling-функция удалена/не подключена.
-        if (typeof startClosedTicketsPolling === 'function') {
-            // Защита от падения всего скрипта, если polling-функция удалена/не подключена.
+        
+        // ИСПРАВЛЕННЫЙ БЛОК (убран дубликат)
         if (typeof startClosedTicketsPolling === 'function') {
             startClosedTicketsPolling();
-        }
         }
 
         // HTMX Hooks
