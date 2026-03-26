@@ -316,7 +316,7 @@
                             hx-get="{% url 'feedback:load_more_tickets' %}?offset={{ next_offset }}&user_id={{ user_id }}"
                             hx-target="this" 
                             hx-swap="outerHTML"
-                            onclick="tg.HapticFeedback.impactOccurred('medium')"
+                            onclick="markManualHistoryLoad(); tg.HapticFeedback.impactOccurred('medium')"
                             class="neo-btn w-full py-4 mt-4 text-[10px] font-bold uppercase !bg-transparent border-2 !border-white/20 !text-white !shadow-[4px_4px_0px_rgba(255,255,255,0.2)] active:!shadow-[0px_0px_0px_rgba(255,255,255,0.2)]">
                         Yana yuklash
                     </button>
@@ -341,7 +341,7 @@
 
     <div id="closed-ticket-modal" class="hidden fixed inset-0 z-[10001] bg-[#0c0a14] flex items-center justify-center p-6">
         <div class="max-w-sm w-full text-center space-y-5">
-            <img src="{% static 'feedback/soldier.png' %}" class="w-52 mx-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]" alt="Murojaat yopildi">
+            <img src="{% static 'feedback/huh.png' %}" class="w-52 mx-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]" alt="Murojaat yopildi">
             <h3 class="text-2xl font-bold uppercase tracking-tight">Murojaat yopildi</h3>
             <p class="text-[11px] text-white/60 uppercase font-bold tracking-widest leading-relaxed">
                 Bu murojaat bo'yicha ish yakunlandi 
@@ -427,7 +427,27 @@
         }
 
         function setSeenClosedTickets(ids) {
-            localStorage.setItem(CLOSED_TICKETS_STORAGE_KEY, JSON.stringify(ids));
+            try {
+                localStorage.setItem(CLOSED_TICKETS_STORAGE_KEY, JSON.stringify(ids));
+            } catch (e) {
+                // ignore storage write errors in restricted WebView modes
+            }
+        }
+
+        function getClosedTicketsInitializedFlag() {
+            try {
+                return localStorage.getItem(CLOSED_TICKETS_INITIALIZED_KEY) === '1';
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function setClosedTicketsInitializedFlag() {
+            try {
+                localStorage.setItem(CLOSED_TICKETS_INITIALIZED_KEY, '1');
+            } catch (e) {
+                // ignore storage write errors in restricted WebView modes
+            }
         }
 
         function detectNewlyClosedTickets() {
@@ -437,7 +457,7 @@
                 .filter(Boolean);
 
             const seen = new Set(getSeenClosedTickets());
-            const isInitialized = localStorage.getItem(CLOSED_TICKETS_INITIALIZED_KEY) === '1';
+            const isInitialized = getClosedTicketsInitializedFlag();
             const newClosedIds = currentClosedIds.filter(id => !seen.has(id));
             const shouldNotify =
                 isInitialized &&
@@ -446,7 +466,7 @@
 
             currentClosedIds.forEach(id => seen.add(id));
             setSeenClosedTickets(Array.from(seen));
-            localStorage.setItem(CLOSED_TICKETS_INITIALIZED_KEY, '1');
+            setClosedTicketsInitializedFlag();
             closedTicketDetectionSource = 'init';
 
             if (shouldNotify) {
