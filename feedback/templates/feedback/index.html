@@ -151,7 +151,7 @@
     </div>
 
     <div id="welcome-screen" class="flex flex-col items-center justify-center min-h-[90vh] text-center w-full max-w-md mx-auto">
-        <img src="{% static 'feedback/bunny_happy.png' %}" class="w-64 mb-6 drop-shadow-[0_15px_30px_rgba(173,136,185,0.4)]">
+        <img src="{% static 'feedback/bunny_happy.png' %}" class="w-64 mb-6 drop-shadow-[0_15px_30px_rgba(173,136,185,0.4)] animate-float">
         <h1 class="text-3xl font-bold text-white mb-2 uppercase tracking-tighter">Kawaii</h1>
         
         <div class="relative mb-12 inline-flex items-center justify-center w-full">
@@ -325,7 +325,7 @@
 
     <div id="confirm-modal">
         <div class="modal-box text-center">
-            <img src="{% static 'feedback/bunny_happy.png' %}" class="w-20 mx-auto mb-4 animate-float">
+            <img src="{% static 'feedback/soldier.png' %}" class="w-20 mx-auto mb-4 animate-float">
             <h3 class="text-black font-bold text-sm uppercase mb-2">Aniqmi?</h3>
             <p class="text-gray-500 text-[10px] font-bold uppercase mb-6 leading-relaxed">Murojaatni yopmoqchimisiz? <br>Buni ortga qaytarib bo'lmaydi!</p>
             <div class="flex space-x-3">
@@ -336,21 +336,27 @@
     </div>
 
     <script>
+        // Preloader Logic
         window.addEventListener('load', function() {
             const preloader = document.getElementById('preloader');
-            preloader.classList.add('fade-out');
-            document.body.style.overflow = 'auto'; 
-            setTimeout(() => { preloader.remove(); }, 500);
+            if(preloader) {
+                preloader.classList.add('fade-out');
+                document.body.style.overflow = 'auto'; 
+                setTimeout(() => { preloader.remove(); }, 500);
+            }
         });
 
         const tg = window.Telegram.WebApp;
-        tg.ready(); tg.expand(); tg.setHeaderColor('#0c0a14');
+        tg.ready(); 
+        tg.expand(); 
+        tg.setHeaderColor('#0c0a14');
 
         let activeTicketId = null;
         let currentActionUrl = null;
         let currentUserId = null;
         let currentToken = null;
 
+        // Modal Logic
         window.showConfirmModal = function(url, userId, token) {
             currentActionUrl = url;
             currentUserId = userId;
@@ -377,10 +383,11 @@
             });
         };
 
+        // Time Formatting
         function updateAllTimes() {
             document.querySelectorAll('.local-time, .local-time-msg').forEach(el => {
                 let utcStr = el.getAttribute('data-utc');
-                if (!utcStr) return;
+                if (!utcStr || utcStr === "None") return;
                 const date = new Date(utcStr);
                 if (!isNaN(date)) {
                     const hours = date.getHours().toString().padStart(2, '0');
@@ -389,20 +396,25 @@
                         const day = date.getDate().toString().padStart(2, '0');
                         const month = (date.getMonth() + 1).toString().padStart(2, '0');
                         el.innerText = `${day}.${month}.${date.getFullYear()} ${hours}:${minutes}`;
-                    } else { el.innerText = `${hours}:${minutes}`; }
+                    } else { 
+                        el.innerText = `${hours}:${minutes}`; 
+                    }
                 }
             });
         }
 
+        // Setup Telegram Data & Custom Select
         function setupLogic() {
             const user = tg.initDataUnsafe?.user;
             if (user) {
                 const uId = user.id.toString();
                 const uName = user.username || "anonymous";
-                if (document.getElementById('user_id_input')) document.getElementById('user_id_input').value = uId;
-                if (document.getElementById('username_input')) document.getElementById('username_input').value = uName;
+                const userIdInput = document.getElementById('user_id_input');
+                const usernameInput = document.getElementById('username_input');
                 
-                // URL-da user_id bo'lishini ta'minlash
+                if (userIdInput) userIdInput.value = uId;
+                if (usernameInput) usernameInput.value = uName;
+                
                 const urlParams = new URLSearchParams(window.location.search);
                 if (!urlParams.has('user_id')) {
                     const newUrl = window.location.pathname + `?user_id=${uId}`;
@@ -410,6 +422,7 @@
                 }
             }
 
+            // Custom Select Logic
             const selectWrapper = document.getElementById('custom-select');
             const optionsList = document.getElementById('select-options');
             const arrow = document.getElementById('select-arrow');
@@ -430,26 +443,28 @@
                 });
             }
             
+            // Re-open active ticket after HTMX update
             if (activeTicketId) {
                 const card = document.querySelector(`.history-card[data-ticket-id="${activeTicketId}"]`);
                 if (card) {
                     card.querySelector('.expanded-content').classList.remove('hidden');
                     card.querySelector('.preview-text').classList.add('hidden');
+                    const chat = card.querySelector('.chat-container');
+                    if(chat) chat.scrollTop = chat.scrollHeight;
                 }
             }
             updateAllTimes();
         }
 
+        // Initial setup
         setupLogic();
 
+        // HTMX Hooks
         document.body.addEventListener('htmx:afterSettle', (evt) => {
             setupLogic();
-            if (activeTicketId) {
-                const activeChat = document.querySelector(`.history-card[data-ticket-id="${activeTicketId}"] .chat-container`);
-                if (activeChat) activeChat.scrollTop = activeChat.scrollHeight;
-            }
         });
 
+        // Toggle Ticket Cards
         window.toggleCard = function(element) {
             const card = element.closest('.history-card');
             const ticketId = card.getAttribute('data-ticket-id');
@@ -457,7 +472,7 @@
             const preview = card.querySelector('.preview-text');
             const isOpening = content.classList.contains('hidden');
             
-            // Boshqa barcha kartalarni yopish (ixtiyoriy, chiroyli chiqadi)
+            // Close others
             document.querySelectorAll('.expanded-content').forEach(c => {
                 if(c !== content) c.classList.add('hidden');
             });
@@ -471,63 +486,59 @@
             if(isOpening) {
                 activeTicketId = ticketId;
                 const container = content.querySelector('.chat-container');
-                if(container) container.scrollTop = container.scrollHeight;
+                if(container) {
+                    setTimeout(() => { container.scrollTop = container.scrollHeight; }, 50);
+                }
                 tg.HapticFeedback.impactOccurred('light');
-            } else { activeTicketId = null; }
+            } else { 
+                activeTicketId = null; 
+            }
         };
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const welcomeScreen = document.getElementById('welcome-screen');
-            const mainApp = document.getElementById('main-app');
-            const startBtn = document.getElementById('start-btn');
+        // Welcome screen to main app
+        const startBtn = document.getElementById('start-btn');
+        if (startBtn) {
+            startBtn.addEventListener('click', () => {
+                document.getElementById('welcome-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+            });
+        }
 
-            if (startBtn) {
-                startBtn.addEventListener('click', () => {
-                    welcomeScreen.classList.add('hidden');
-                    mainApp.classList.remove('hidden');
-                });
-            }
+        // Bunny Phrases Logic
+        const bunnyPhrases = [
+            "Yana savolmi? Charchadim-ku... ☕",
+            "Adminlar o'qishmoqda.",
+            "Kakaoyim tugab qolyapti...",
+            "Hali ham javob yo'qmi?",
+            "Yangi murojaat? Xo'p...",
+            "Bugun ko'p ishladim ✨"
+        ];
+        
+        function startBunnyInteractions() {
+            setInterval(() => {
+                const dynamicSubtitles = document.querySelectorAll('.dynamic-subtitle');
+                const speechBubbles = document.querySelectorAll('.speech-bubble');
+                
+                dynamicSubtitles.forEach(el => el.style.opacity = '0');
 
-            const bunnyPhrases = [
-                "Yana savolmi? Charchadim-ku... ☕",
-                "Adminlar o'qishmoqda.",
-                "Kakaoyim tugab qolyapti...",
-                "Hali ham javob yo'qmi?",
-                "Yangi murojaat? Xo'p...",
-                "Bugun ko'p ishladim ✨"
-            ];
-            
-            const dynamicSubtitles = document.querySelectorAll('.dynamic-subtitle');
-            const speechBubbles = document.querySelectorAll('.speech-bubble');
-
-            function startBunnyInteractions() {
-                setInterval(() => {
-                    dynamicSubtitles.forEach(el => el.style.opacity = '0');
-
-                    setTimeout(() => {
-                        const phrase = bunnyPhrases[Math.floor(Math.random() * bunnyPhrases.length)];
-                        
-                        speechBubbles.forEach(bubble => {
-                            bubble.innerText = phrase;
-                            bubble.classList.add('show');
-                        });
-                        
-                        setTimeout(() => {
-                            speechBubbles.forEach(bubble => bubble.classList.remove('show'));
-                            
-                            setTimeout(() => {
-                                dynamicSubtitles.forEach(el => el.style.opacity = '1');
-                            }, 400); 
-                            
-                        }, 5000); 
-                        
-                    }, 400); 
+                setTimeout(() => {
+                    const phrase = bunnyPhrases[Math.floor(Math.random() * bunnyPhrases.length)];
+                    speechBubbles.forEach(bubble => {
+                        bubble.innerText = phrase;
+                        bubble.classList.add('show');
+                    });
                     
-                }, 30000); 
-            }
+                    setTimeout(() => {
+                        speechBubbles.forEach(bubble => bubble.classList.remove('show'));
+                        setTimeout(() => {
+                            dynamicSubtitles.forEach(el => el.style.opacity = '1');
+                        }, 400);
+                    }, 4000); 
+                }, 400); 
+            }, 20000); 
+        }
 
-            startBunnyInteractions();
-        });
+        startBunnyInteractions();
     </script>
 </body>
 </html>
