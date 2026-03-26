@@ -27,7 +27,7 @@
         </div>
 
         {% if not item.is_closed %}
-            <form hx-post="{% url 'feedback:reply_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" class="mt-4 flex items-center space-x-2 mb-4"></form>
+            <form hx-post="{% url 'feedback:reply_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" class="mt-4 flex items-center space-x-2 mb-4">
                 {% csrf_token %}
                 <input type="hidden" name="user_id" value="{{ user_id }}">
                 <input type="text" name="new_reply" placeholder="Xabar yozish..." required class="neo-input flex-1 px-3 py-2 text-[10px] h-10 font-bold focus:outline-none bg-white/90">
