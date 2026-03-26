@@ -97,14 +97,14 @@
         .preserve-lines { white-space: pre-wrap; word-break: break-all; }
         .hidden { display: none !important; }
 
-        /* --- НОВЫЕ СТИЛИ ДЛЯ BUBBLE --- */
+        /* --- СТИЛИ ДЛЯ BUBBLE --- */
         .speech-bubble {
             background: white; color: black; 
             padding: 6px 12px;
             border: 2px solid #000;
             font-size: 10px; font-weight: 900; z-index: 50;
             box-shadow: 3px 3px 0px #000;
-            white-space: nowrap; /* Не дает тексту переноситься на новую строку */
+            white-space: nowrap; 
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -118,6 +118,30 @@
 
         .bubble-center { border-radius: 16px; }
         .bubble-left { border-radius: 16px 16px 16px 0; left: -8px; }
+
+        /* --- СТИЛИ МОДАЛЬНОГО ОКНА CONFIRM --- */
+        #confirm-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(12, 10, 20, 0.8); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10000; opacity: 0; visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        #confirm-modal.show { opacity: 1; visibility: visible; }
+        .modal-box {
+            background: white; border: 4px solid #000; border-radius: 30px;
+            padding: 24px; width: 85%; max-width: 320px;
+            box-shadow: 12px 12px 0px #000;
+            transform: scale(0.8); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        #confirm-modal.show .modal-box { transform: scale(1); }
+
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float { animation: floating 3s ease-in-out infinite; }
 
     </style>
 </head>
@@ -271,11 +295,17 @@
                                     <div class="{% if item.is_answered %}status-pending{% else %}status-open{% endif %} flex items-center text-[9px] font-bold uppercase {% if item.is_answered %}text-yellow-500{% else %}text-green-500{% endif %}">
                                         <span class="dot"></span> {% if item.is_answered %}Ko'rib chiqilmoqda{% else %}Ochiq{% endif %}
                                     </div>
-                                    <button hx-post="{% url 'close_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" hx-vals='{"user_id": "{{ user_id }}"}' hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' onclick="tg.HapticFeedback.impactOccurred('medium')" class="text-[8px] font-bold bg-[#ad88b9] text-white px-3 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] uppercase">Yopish</button>
+                                    
+                                    <button 
+                                        type="button" 
+                                        onclick="showConfirmModal('{% url 'close_ticket' item.id %}', '{{ user_id }}', '{{ csrf_token }}')"
+                                        class="text-[8px] font-bold bg-[#ad88b9] text-white px-3 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] uppercase transition-transform active:translate-y-1 active:shadow-none">
+                                        Yopish
+                                    </button>
                                 </div>
                             {% else %}
                                 <div class="pt-4 border-t border-white/10 text-[8px] font-bold uppercase text-white/20 tracking-widest text-center flex items-center justify-center">
-                                   <span class="mr-2">🔒</span> Murojaat yopilgan
+                                    <span class="mr-2">🔒</span> Murojaat yopilgan
                                 </div>
                             {% endif %}
                         </div>
@@ -298,6 +328,18 @@
         </div>
     </div>
 
+    <div id="confirm-modal">
+        <div class="modal-box text-center">
+            <img src="{% static 'feedback/bunny_happy.png' %}" class="w-20 mx-auto mb-4 animate-float">
+            <h3 class="text-black font-bold text-sm uppercase mb-2">Aniqmi?</h3>
+            <p class="text-gray-500 text-[10px] font-bold uppercase mb-6 leading-relaxed">Murojaatni yopmoqchimisiz? <br>Buni ortga qaytarib bo'lmaydi!</p>
+            <div class="flex space-x-3">
+                <button id="confirm-no" class="flex-1 py-3 border-2 border-black rounded-xl text-black font-bold text-[10px] uppercase transition-transform active:scale-95">Yo'q</button>
+                <button id="confirm-yes" class="flex-1 py-3 bg-[#ad88b9] border-2 border-black rounded-xl text-white font-bold text-[10px] uppercase shadow-[3px_3px_0px_#000] transition-transform active:translate-y-1 active:shadow-none">Ha!</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         window.addEventListener('load', function() {
             const preloader = document.getElementById('preloader');
@@ -310,6 +352,41 @@
         tg.ready(); tg.expand(); tg.setHeaderColor('#0c0a14');
 
         let activeTicketId = null;
+        
+        // MODAL UCHUN O'ZGARUVCHILAR
+        let currentActionUrl = null;
+        let currentUserId = null;
+        let currentToken = null;
+
+        // MODALNI OCHISH
+        window.showConfirmModal = function(url, userId, token) {
+            currentActionUrl = url;
+            currentUserId = userId;
+            currentToken = token;
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.add('show');
+            tg.HapticFeedback.notificationOccurred('warning');
+        };
+
+        // YO'Q TUGMASI
+        document.getElementById('confirm-no').onclick = () => {
+            document.getElementById('confirm-modal').classList.remove('show');
+            tg.HapticFeedback.impactOccurred('light');
+        };
+
+        // HA TUGMASI
+        document.getElementById('confirm-yes').onclick = () => {
+            document.getElementById('confirm-modal').classList.remove('show');
+            tg.HapticFeedback.impactOccurred('medium');
+            
+            // HTMX so'rovini yuborish
+            htmx.ajax('POST', currentActionUrl, {
+                target: '#form-container',
+                select: '#form-container',
+                values: { 'user_id': currentUserId },
+                headers: { 'X-CSRFToken': currentToken }
+            });
+        };
 
         function updateAllTimes() {
             document.querySelectorAll('.local-time, .local-time-msg').forEach(el => {
@@ -411,7 +488,6 @@
                 });
             }
 
-            // --- ОБНОВЛЕННАЯ ЛОГИКА BUBBLE-АНИМАЦИИ ---
             const bunnyPhrases = [
                 "Yana savolmi? Charchadim-ku... ☕",
                 "Adminlar o'qishmoqda.",
@@ -426,33 +502,28 @@
 
             function startBunnyInteractions() {
                 setInterval(() => {
-                    // 1. Плавно прячем оригинальный текст Service Support
                     dynamicSubtitles.forEach(el => el.style.opacity = '0');
 
                     setTimeout(() => {
                         const phrase = bunnyPhrases[Math.floor(Math.random() * bunnyPhrases.length)];
                         
-                        // 2. Вписываем фразу в bubble и показываем его
                         speechBubbles.forEach(bubble => {
                             bubble.innerText = phrase;
                             bubble.classList.add('show');
                         });
                         
-                        // 3. Держим фразу на экране 5 секунд
                         setTimeout(() => {
-                            // Плавно скрываем bubble
                             speechBubbles.forEach(bubble => bubble.classList.remove('show'));
                             
                             setTimeout(() => {
-                                // Возвращаем Service Support обратно
                                 dynamicSubtitles.forEach(el => el.style.opacity = '1');
-                            }, 400); // 400мс ждем исчезновения пузыря
+                            }, 400); 
                             
                         }, 5000); 
                         
-                    }, 400); // 400мс ждем исчезновения оригинального текста
+                    }, 400); 
                     
-                }, 30000); // Повторяем каждые 30 секунд
+                }, 30000); 
             }
 
             startBunnyInteractions();
