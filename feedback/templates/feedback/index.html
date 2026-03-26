@@ -15,7 +15,7 @@
             background-color: var(--dark-bg);
             font-family: 'Unbounded', sans-serif;
             margin: 0; min-height: 100vh; color: white;
-            overflow: hidden; 
+            overflow-x: hidden; 
         }
 
         #preloader {
@@ -97,14 +97,13 @@
         .preserve-lines { white-space: pre-wrap; word-break: break-all; }
         .hidden { display: none !important; }
 
-        /* --- НОВЫЕ СТИЛИ ДЛЯ BUBBLE --- */
         .speech-bubble {
             background: white; color: black; 
             padding: 6px 12px;
             border: 2px solid #000;
             font-size: 10px; font-weight: 900; z-index: 50;
             box-shadow: 3px 3px 0px #000;
-            white-space: nowrap; /* Не дает тексту переноситься на новую строку */
+            white-space: nowrap; 
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -119,33 +118,32 @@
         .bubble-center { border-radius: 16px; }
         .bubble-left { border-radius: 16px 16px 16px 0; left: -8px; }
 
+        #confirm-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(12, 10, 20, 0.8); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10000; opacity: 0; visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        #confirm-modal.show { opacity: 1; visibility: visible; }
+        .modal-box {
+            background: white; border: 4px solid #000; border-radius: 30px;
+            padding: 24px; width: 85%; max-width: 320px;
+            box-shadow: 12px 12px 0px #000;
+            transform: scale(0.8); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        #confirm-modal.show .modal-box { transform: scale(1); }
+
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float { animation: floating 3s ease-in-out infinite; }
+
     </style>
 </head>
 <body class="p-4">
-
-    <div id="confirm-modal" class="hidden">
-    <div class="modal-box text-center">
-        <img src="{% static 'feedback/soldier.png' %}" class="w-20 mx-auto mb-4">
-
-        <h3 class="text-black font-bold text-sm uppercase mb-2">Aniqmi?</h3>
-
-        <p class="text-gray-500 text-[10px] font-bold uppercase mb-6">
-            Murojaatni yopmoqchimisiz? <br>Buni ortga qaytarib bo'lmaydi!
-        </p>
-
-        <div class="flex space-x-3">
-            <button id="confirm-no"
-                class="flex-1 py-3 border-2 border-black rounded-xl text-black font-bold text-[10px] uppercase">
-                Yo'q
-            </button>
-
-            <button id="confirm-yes"
-                class="flex-1 py-3 bg-[#ad88b9] border-2 border-black rounded-xl text-white font-bold text-[10px] uppercase">
-                Ha!
-            </button>
-        </div>
-    </div>
-</div>
 
     <div id="preloader">
         <div class="loader-spinner"></div>
@@ -153,7 +151,7 @@
     </div>
 
     <div id="welcome-screen" class="flex flex-col items-center justify-center min-h-[90vh] text-center w-full max-w-md mx-auto">
-        <img src="{% static 'feedback/bunny_happy.png' %}" class="w-64 mb-6 drop-shadow-[0_15px_30px_rgba(173,136,185,0.4)]">
+        <img src="{% static 'feedback/bunny_happy.png' %}" class="w-64 mb-6 drop-shadow-[0_15px_30px_rgba(173,136,185,0.4)] animate-float">
         <h1 class="text-3xl font-bold text-white mb-2 uppercase tracking-tighter">Kawaii</h1>
         
         <div class="relative mb-12 inline-flex items-center justify-center w-full">
@@ -182,7 +180,6 @@
             </div>
             {% else %}
             <div class="neo-card p-8 relative">
-                
                 <div class="neo-card-content">
                     <div class="flex items-center justify-between mb-8">
                         <div>
@@ -195,7 +192,7 @@
                         <div class="w-10 h-10 rounded-full border-2 border-black neo-avatar shadow-[3px_3px_0px_#000000]"></div>
                     </div>
                     
-                    <form id="feedback-form" hx-post="{% url 'submit_feedback' %}" hx-target="#form-container" hx-select="#form-container" class="space-y-5">
+                    <form id="feedback-form" hx-post="{% url 'feedback:submit_feedback' %}" hx-target="#form-container" hx-select="#form-container" class="space-y-5">
                         {% csrf_token %}
                         <input type="hidden" name="user_id" id="user_id_input" value="{{ user_id }}">
                         <input type="hidden" name="username" id="username_input">
@@ -230,8 +227,9 @@
                                 class="neo-input w-full p-4 bg-white/90 text-black h-32 resize-none focus:outline-none text-xs font-bold"></textarea>
                         </div>
 
-                        <button type="submit" id="submit-btn" class="neo-btn w-full py-4 font-bold text-xs">
-                            <span class="uppercase">Yuborish</span>
+                        <button type="submit" onclick="tg.HapticFeedback.impactOccurred('medium')" 
+                            class="neo-btn w-full py-4 text-xs font-bold uppercase tracking-widest">
+                            Yuborish
                         </button>
                     </form>
                 </div>
@@ -243,13 +241,9 @@
                 <div class="flex items-center justify-between px-2">
                     <h3 class="text-[10px] font-bold uppercase tracking-[3px] text-white/50">Mening murojaatlarim</h3>
                     
-                    <button 
-                        hx-get="{% url 'load_more_tickets' %}?user_id={{ user_id }}&offset=0" 
-                        hx-target="#history-list-container" 
-                        hx-swap="innerHTML"
-                        onclick="tg.HapticFeedback.impactOccurred('light')"
+                    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'}); tg.HapticFeedback.impactOccurred('light')"
                         class="text-[#ad88b9] text-[9px] font-bold uppercase flex items-center gap-1 active:scale-90 transition-transform">
-                        <span>Yopish</span>
+                        <span>Tepaga</span>
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7"></path></svg>
                     </button>
                 </div>
@@ -282,7 +276,7 @@
                             </div>
 
                             {% if not item.is_closed %}
-                                <form hx-post="{% url 'reply_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" class="mt-4 flex items-center space-x-2 mb-4">
+                                <form hx-post="{% url 'feedback:reply_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" class="mt-4 flex items-center space-x-2 mb-4">
                                     {% csrf_token %}
                                     <input type="hidden" name="user_id" value="{{ user_id }}">
                                     <input type="text" name="new_reply" placeholder="Xabar yozish..." required class="neo-input flex-1 px-3 py-2 text-[10px] h-10 font-bold focus:outline-none bg-white/90">
@@ -292,14 +286,21 @@
                                 </form>
                                 
                                 <div class="flex justify-between items-center border-t border-white/10 pt-4">
-                                    <div class="{% if item.is_answered %}status-pending{% else %}status-open{% endif %} flex items-center text-[9px] font-bold uppercase {% if item.is_answered %}text-yellow-500{% else %}text-green-500{% endif %}">
-                                        <span class="dot"></span> {% if item.is_answered %}Ko'rib chiqilmoqda{% else %}Ochiq{% endif %}
+                                    <div class="{% if not item.is_answered %}status-open{% else %}status-pending{% endif %} flex items-center text-[9px] font-bold uppercase {% if not item.is_answered %}text-green-500{% else %}text-yellow-500{% endif %}">
+                                        <span class="dot"></span> {% if not item.is_answered %}Ochiq{% else %}Ko'rib chiqilmoqda{% endif %}
                                     </div>
-                                    <button hx-post="{% url 'close_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" hx-vals='{"user_id": "{{ user_id }}"}' hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' onclick="tg.HapticFeedback.impactOccurred('medium')" class="text-[8px] font-bold bg-[#ad88b9] text-white px-3 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] uppercase">Yopish</button>
+                                    
+                                    <button 
+                                        type="button"
+                                        data-url="{% url 'feedback:close_ticket' item.id %}"
+                                        onclick="showConfirmModal(this.getAttribute('data-url'), '{{ user_id }}', '{{ csrf_token }}')"
+                                        class="text-[8px] font-bold bg-[#ad88b9] text-white px-3 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] uppercase transition-transform active:scale-95">
+                                        Yopish
+                                    </button>
                                 </div>
                             {% else %}
                                 <div class="pt-4 border-t border-white/10 text-[8px] font-bold uppercase text-white/20 tracking-widest text-center flex items-center justify-center">
-                                   <span class="mr-2">🔒</span> Murojaat yopilgan
+                                    <span class="mr-2">🔒</span> Murojaat yopilgan
                                 </div>
                             {% endif %}
                         </div>
@@ -308,7 +309,7 @@
                     
                     {% if has_more_tickets %}
                     <button id="load-more-btn"
-                            hx-get="{% url 'load_more_tickets' %}?offset={{ next_offset }}&user_id={{ user_id }}"
+                            hx-get="{% url 'feedback:load_more_tickets' %}?offset={{ next_offset }}&user_id={{ user_id }}"
                             hx-target="this" 
                             hx-swap="outerHTML"
                             onclick="tg.HapticFeedback.impactOccurred('medium')"
@@ -322,23 +323,71 @@
         </div>
     </div>
 
+    <div id="confirm-modal">
+        <div class="modal-box text-center">
+            <img src="{% static 'feedback/soldier.png' %}" class="w-20 mx-auto mb-4">
+            <h3 class="text-black font-bold text-sm uppercase mb-2">Aniqmi?</h3>
+            <p class="text-gray-500 text-[10px] font-bold uppercase mb-6 leading-relaxed">Murojaatni yopmoqchimisiz? <br>Buni ortga qaytarib bo'lmaydi!</p>
+            <div class="flex space-x-3">
+                <button id="confirm-no" class="flex-1 py-3 border-2 border-black rounded-xl text-black font-bold text-[10px] uppercase transition-transform active:scale-95">Yo'q</button>
+                <button id="confirm-yes" class="flex-1 py-3 bg-[#ad88b9] border-2 border-black rounded-xl text-white font-bold text-[10px] uppercase shadow-[3px_3px_0px_#000] transition-transform active:translate-y-1 active:shadow-none">Ha!</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Preloader Logic
         window.addEventListener('load', function() {
             const preloader = document.getElementById('preloader');
-            preloader.classList.add('fade-out');
-            document.body.style.overflow = 'auto'; 
-            setTimeout(() => { preloader.remove(); }, 500);
+            if(preloader) {
+                preloader.classList.add('fade-out');
+                document.body.style.overflow = 'auto'; 
+                setTimeout(() => { preloader.remove(); }, 500);
+            }
         });
 
         const tg = window.Telegram.WebApp;
-        tg.ready(); tg.expand(); tg.setHeaderColor('#0c0a14');
+        tg.ready(); 
+        tg.expand(); 
+        tg.setHeaderColor('#0c0a14');
 
         let activeTicketId = null;
+        let currentActionUrl = null;
+        let currentUserId = null;
+        let currentToken = null;
 
+        // Modal Logic
+        window.showConfirmModal = function(url, userId, token) {
+            currentActionUrl = url;
+            currentUserId = userId;
+            currentToken = token;
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.add('show');
+            tg.HapticFeedback.notificationOccurred('warning');
+        };
+
+        document.getElementById('confirm-no').onclick = () => {
+            document.getElementById('confirm-modal').classList.remove('show');
+            tg.HapticFeedback.impactOccurred('light');
+        };
+
+        document.getElementById('confirm-yes').onclick = () => {
+            document.getElementById('confirm-modal').classList.remove('show');
+            tg.HapticFeedback.impactOccurred('medium');
+            
+            htmx.ajax('POST', currentActionUrl, {
+                target: '#form-container',
+                select: '#form-container',
+                values: { 'user_id': currentUserId },
+                headers: { 'X-CSRFToken': currentToken }
+            });
+        };
+
+        // Time Formatting
         function updateAllTimes() {
             document.querySelectorAll('.local-time, .local-time-msg').forEach(el => {
                 let utcStr = el.getAttribute('data-utc');
-                if (!utcStr) return;
+                if (!utcStr || utcStr === "None") return;
                 const date = new Date(utcStr);
                 if (!isNaN(date)) {
                     const hours = date.getHours().toString().padStart(2, '0');
@@ -347,24 +396,33 @@
                         const day = date.getDate().toString().padStart(2, '0');
                         const month = (date.getMonth() + 1).toString().padStart(2, '0');
                         el.innerText = `${day}.${month}.${date.getFullYear()} ${hours}:${minutes}`;
-                    } else { el.innerText = `${hours}:${minutes}`; }
+                    } else { 
+                        el.innerText = `${hours}:${minutes}`; 
+                    }
                 }
             });
         }
 
+        // Setup Telegram Data & Custom Select
         function setupLogic() {
             const user = tg.initDataUnsafe?.user;
             if (user) {
                 const uId = user.id.toString();
                 const uName = user.username || "anonymous";
-                if (document.getElementById('user_id_input')) document.getElementById('user_id_input').value = uId;
-                if (document.getElementById('username_input')) document.getElementById('username_input').value = uName;
+                const userIdInput = document.getElementById('user_id_input');
+                const usernameInput = document.getElementById('username_input');
+                
+                if (userIdInput) userIdInput.value = uId;
+                if (usernameInput) usernameInput.value = uName;
+                
                 const urlParams = new URLSearchParams(window.location.search);
                 if (!urlParams.has('user_id')) {
-                    window.location.replace(window.location.pathname + `?user_id=${uId}`);
+                    const newUrl = window.location.pathname + `?user_id=${uId}`;
+                    window.history.replaceState({}, '', newUrl);
                 }
             }
 
+            // Custom Select Logic
             const selectWrapper = document.getElementById('custom-select');
             const optionsList = document.getElementById('select-options');
             const arrow = document.getElementById('select-arrow');
@@ -385,26 +443,28 @@
                 });
             }
             
+            // Re-open active ticket after HTMX update
             if (activeTicketId) {
                 const card = document.querySelector(`.history-card[data-ticket-id="${activeTicketId}"]`);
                 if (card) {
                     card.querySelector('.expanded-content').classList.remove('hidden');
                     card.querySelector('.preview-text').classList.add('hidden');
+                    const chat = card.querySelector('.chat-container');
+                    if(chat) chat.scrollTop = chat.scrollHeight;
                 }
             }
             updateAllTimes();
         }
 
+        // Initial setup
         setupLogic();
 
+        // HTMX Hooks
         document.body.addEventListener('htmx:afterSettle', (evt) => {
             setupLogic();
-            if (activeTicketId) {
-                const activeChat = document.querySelector(`.history-card[data-ticket-id="${activeTicketId}"] .chat-container`);
-                if (activeChat) activeChat.scrollTop = activeChat.scrollHeight;
-            }
         });
 
+        // Toggle Ticket Cards
         window.toggleCard = function(element) {
             const card = element.closest('.history-card');
             const ticketId = card.getAttribute('data-ticket-id');
@@ -412,75 +472,73 @@
             const preview = card.querySelector('.preview-text');
             const isOpening = content.classList.contains('hidden');
             
+            // Close others
+            document.querySelectorAll('.expanded-content').forEach(c => {
+                if(c !== content) c.classList.add('hidden');
+            });
+            document.querySelectorAll('.preview-text').forEach(p => {
+                if(p !== preview) p.classList.remove('hidden');
+            });
+
             content.classList.toggle('hidden');
             preview.classList.toggle('hidden');
             
             if(isOpening) {
                 activeTicketId = ticketId;
                 const container = content.querySelector('.chat-container');
-                if(container) container.scrollTop = container.scrollHeight;
+                if(container) {
+                    setTimeout(() => { container.scrollTop = container.scrollHeight; }, 50);
+                }
                 tg.HapticFeedback.impactOccurred('light');
-            } else { activeTicketId = null; }
+            } else { 
+                activeTicketId = null; 
+            }
         };
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const welcomeScreen = document.getElementById('welcome-screen');
-            const mainApp = document.getElementById('main-app');
-            const startBtn = document.getElementById('start-btn');
+        // Welcome screen to main app
+        const startBtn = document.getElementById('start-btn');
+        if (startBtn) {
+            startBtn.addEventListener('click', () => {
+                document.getElementById('welcome-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+            });
+        }
 
-            if (startBtn) {
-                startBtn.addEventListener('click', () => {
-                    welcomeScreen.classList.add('hidden');
-                    mainApp.classList.remove('hidden');
-                });
-            }
+        // Bunny Phrases Logic
+        const bunnyPhrases = [
+            "Yana savolmi? Charchadim-ku... ☕",
+            "Adminlar o'qishmoqda.",
+            "Kakaoyim tugab qolyapti...",
+            "Hali ham javob yo'qmi?",
+            "Yangi murojaat? Xo'p...",
+            "Bugun ko'p ishladim ✨"
+        ];
+        
+        function startBunnyInteractions() {
+            setInterval(() => {
+                const dynamicSubtitles = document.querySelectorAll('.dynamic-subtitle');
+                const speechBubbles = document.querySelectorAll('.speech-bubble');
+                
+                dynamicSubtitles.forEach(el => el.style.opacity = '0');
 
-            // --- ОБНОВЛЕННАЯ ЛОГИКА BUBBLE-АНИМАЦИИ ---
-            const bunnyPhrases = [
-                "Yana savolmi? Charchadim-ku... ☕",
-                "Adminlar o'qishmoqda.",
-                "Kakaoyim tugab qolyapti...",
-                "Hali ham javob yo'qmi?",
-                "Yangi murojaat? Xo'p...",
-                "Bugun ko'p ishladim ✨"
-            ];
-            
-            const dynamicSubtitles = document.querySelectorAll('.dynamic-subtitle');
-            const speechBubbles = document.querySelectorAll('.speech-bubble');
-
-            function startBunnyInteractions() {
-                setInterval(() => {
-                    // 1. Плавно прячем оригинальный текст Service Support
-                    dynamicSubtitles.forEach(el => el.style.opacity = '0');
-
-                    setTimeout(() => {
-                        const phrase = bunnyPhrases[Math.floor(Math.random() * bunnyPhrases.length)];
-                        
-                        // 2. Вписываем фразу в bubble и показываем его
-                        speechBubbles.forEach(bubble => {
-                            bubble.innerText = phrase;
-                            bubble.classList.add('show');
-                        });
-                        
-                        // 3. Держим фразу на экране 5 секунд
-                        setTimeout(() => {
-                            // Плавно скрываем bubble
-                            speechBubbles.forEach(bubble => bubble.classList.remove('show'));
-                            
-                            setTimeout(() => {
-                                // Возвращаем Service Support обратно
-                                dynamicSubtitles.forEach(el => el.style.opacity = '1');
-                            }, 400); // 400мс ждем исчезновения пузыря
-                            
-                        }, 5000); 
-                        
-                    }, 400); // 400мс ждем исчезновения оригинального текста
+                setTimeout(() => {
+                    const phrase = bunnyPhrases[Math.floor(Math.random() * bunnyPhrases.length)];
+                    speechBubbles.forEach(bubble => {
+                        bubble.innerText = phrase;
+                        bubble.classList.add('show');
+                    });
                     
-                }, 30000); // Повторяем каждые 30 секунд
-            }
+                    setTimeout(() => {
+                        speechBubbles.forEach(bubble => bubble.classList.remove('show'));
+                        setTimeout(() => {
+                            dynamicSubtitles.forEach(el => el.style.opacity = '1');
+                        }, 400);
+                    }, 4000); 
+                }, 400); 
+            }, 20000); 
+        }
 
-            startBunnyInteractions();
-        });
+        startBunnyInteractions();
     </script>
 </body>
 </html>
