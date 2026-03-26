@@ -40,7 +40,13 @@
                 <div class="{% if item.is_answered %}status-pending{% else %}status-open{% endif %} flex items-center text-[9px] font-bold uppercase {% if item.is_answered %}text-yellow-500{% else %}text-green-500{% endif %}">
                     <span class="dot"></span> {% if item.is_answered %}Ko'rib chiqilmoqda{% else %}Ochiq{% endif %}
                 </div>
-                <button hx-post="{% url 'feedback:close_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" hx-vals='{"user_id": "{{ user_id }}"}' hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' onclick="tg.HapticFeedback.impactOccurred('medium')" class="text-[8px] font-bold bg-[#ad88b9] text-white px-3 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] uppercase">Yopish</button>
+                <button
+                    type="button"
+                    data-url="{% url 'feedback:close_ticket' item.id %}"
+                    onclick="showConfirmModal(this.getAttribute('data-url'), '{{ user_id }}', '{{ csrf_token }}')"
+                    class="text-[8px] font-bold bg-[#ad88b9] text-white px-3 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] uppercase transition-transform active:scale-95">
+                    Yopish
+                </button>
             </div>
         {% else %}
             <div class="pt-4 border-t border-white/10 text-[8px] font-bold uppercase text-white/20 tracking-widest text-center flex items-center justify-center">
