@@ -415,10 +415,14 @@
                 if (userIdInput) userIdInput.value = uId;
                 if (usernameInput) usernameInput.value = uName;
                 
-                const urlParams = new URLSearchParams(window.location.search);
-                if (!urlParams.has('user_id')) {
-                    const newUrl = window.location.pathname + `?user_id=${uId}`;
-                    window.history.replaceState({}, '', newUrl);
+                const url = new URL(window.location.href);
+                if (!url.searchParams.has('user_id')) {
+                    url.searchParams.set('user_id', uId);
+                    // Без этого сервер не получает user_id на первом входе,
+                    // поэтому история тикетов появляется только после ручного reload.
+                    window.location.replace(url.toString());
+                    return;
+
                 }
             }
 
