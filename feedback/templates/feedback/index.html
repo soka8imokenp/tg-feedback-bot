@@ -228,9 +228,14 @@
                                 class="neo-input w-full p-4 bg-white/90 text-black h-32 resize-none focus:outline-none text-xs font-bold"></textarea>
                         </div>
 
-                        <button type="submit" id="submit-btn" class="neo-btn w-full py-4 font-bold text-xs">
-                            <span class="uppercase">Yuborish</span>
-                        </button>
+                        <button 
+    type="button"
+    data-url="{% url 'feedback:close_ticket' item.id %}"
+    onclick="tg.HapticFeedback.impactOccurred('light'); showConfirmModal(this.getAttribute('data-url'), '{{ user_id }}', '{{ csrf_token }}')"
+    class="text-[8px] font-bold bg-[#ad88b9] text-white px-3 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] uppercase transition-transform active:scale-95"
+>
+    Yopish
+</button>
                     </form>
                 </div>
             </div>
