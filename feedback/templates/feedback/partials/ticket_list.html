@@ -1,5 +1,5 @@
 {% for item in history %}
-<div class="history-card overflow-hidden mb-4" data-ticket-id="{{ item.id }}">
+<<div class="history-card overflow-hidden mb-4" data-ticket-id="{{ item.id }}" data-is-closed="{{ item.is_closed|yesno:'true,false' }}">
     <div class="p-5 cursor-pointer" onclick="toggleCard(this)">
         <div class="flex justify-between items-start mb-3">
             <span class="text-[8px] px-2 py-1 bg-[#ad88b9] text-white rounded-lg uppercase font-bold border border-black shadow-[2px_2px_0px_#000000]">

@@ -151,7 +151,7 @@
     </div>
 
     <div id="welcome-screen" class="flex flex-col items-center justify-center min-h-[90vh] text-center w-full max-w-md mx-auto">
-        <img src="{% static 'feedback/bunny_happy.png' %}" class="w-64 mb-6 drop-shadow-[0_15px_30px_rgba(173,136,185,0.4)] animate-float">
+        <img src="{% static 'feedback/bunny_happy.png' %}" class="w-64 mb-6 drop-shadow-[0_15px_30px_rgba(173,136,185,0.4)]">
         <h1 class="text-3xl font-bold text-white mb-2 uppercase tracking-tighter">Kawaii</h1>
         
         <div class="relative mb-12 inline-flex items-center justify-center w-full">
@@ -254,7 +254,7 @@
                 
                 <div id="history-list-container" class="space-y-4">
                     {% for item in history %}
-                    <div class="history-card overflow-hidden" data-ticket-id="{{ item.id }}">
+                    <div class="history-card overflow-hidden" data-ticket-id="{{ item.id }}" data-is-closed="{{ item.is_closed|yesno:'true,false' }}">
                         <div class="p-5 cursor-pointer" onclick="toggleCard(this)">
                             <div class="flex justify-between items-start mb-3">
                                 <span class="text-[8px] px-2 py-1 bg-[#ad88b9] text-white rounded-lg uppercase font-bold border border-black shadow-[2px_2px_0px_#000000]">{{ item.get_category_display }}</span>
@@ -331,11 +331,24 @@
         <div class="modal-box text-center">
             <img src="{% static 'feedback/huh.png' %}" class="w-20 mx-auto mb-4">
             <h3 class="text-black font-bold text-sm uppercase mb-2">Aniqmi?</h3>
-            <p class="text-gray-500 text-[10px] font-bold uppercase mb-6 leading-relaxed">Murojaatni yopmoqchimisiz? <br>Buni ortga qaytarib bo'lmaydi!</p>
+            <p class="text-gray-500 text-[10px] font-bold uppercase mb-6 leading-relaxed">Murojaatni yopmoqchimisiz?</p>
             <div class="flex space-x-3">
                 <button id="confirm-no" class="flex-1 py-3 border-2 border-black rounded-xl text-black font-bold text-[10px] uppercase transition-transform active:scale-95">Yo'q</button>
                 <button id="confirm-yes" class="flex-1 py-3 bg-[#ad88b9] border-2 border-black rounded-xl text-white font-bold text-[10px] uppercase shadow-[3px_3px_0px_#000] transition-transform active:translate-y-1 active:shadow-none">Ha!</button>
             </div>
+        </div>
+    </div>
+
+    <div id="closed-ticket-modal" class="hidden fixed inset-0 z-[10001] bg-[#0c0a14] flex items-center justify-center p-6">
+        <div class="max-w-sm w-full text-center space-y-5">
+            <img src="{% static 'feedback/huh.png' %}" class="w-52 mx-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]" alt="Murojaat yopildi">
+            <h3 class="text-2xl font-bold uppercase tracking-tight">Murojaat yopildi</h3>
+            <p class="text-[11px] text-white/60 uppercase font-bold tracking-widest leading-relaxed">
+                Bu murojaat bo'yicha ish yakunlandi ✨
+            </p>
+            <button id="closed-ticket-ok" class="neo-btn w-full py-4 text-xs font-bold uppercase tracking-widest">
+                Tushunarli
+            </button>
         </div>
     </div>
 
@@ -359,6 +372,8 @@
         let currentActionUrl = null;
         let currentUserId = null;
         let currentToken = null;
+        let pollIntervalId = null;
+        const CLOSED_TICKETS_STORAGE_KEY = 'kawaii_closed_ticket_ids';
 
         // Modal Logic
         window.showConfirmModal = function(url, userId, token) {
@@ -386,6 +401,66 @@
                 headers: { 'X-CSRFToken': currentToken }
             });
         };
+
+        function showClosedTicketModal() {
+            const modal = document.getElementById('closed-ticket-modal');
+            if (!modal || !modal.classList.contains('hidden')) return;
+            modal.classList.remove('hidden');
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+
+        document.getElementById('closed-ticket-ok').onclick = () => {
+            const modal = document.getElementById('closed-ticket-modal');
+            modal.classList.add('hidden');
+            tg.HapticFeedback.impactOccurred('light');
+        };
+
+        function getSeenClosedTickets() {
+            try {
+                return JSON.parse(localStorage.getItem(CLOSED_TICKETS_STORAGE_KEY) || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function setSeenClosedTickets(ids) {
+            localStorage.setItem(CLOSED_TICKETS_STORAGE_KEY, JSON.stringify(ids));
+        }
+
+        function detectNewlyClosedTickets() {
+            const closedCards = Array.from(document.querySelectorAll('.history-card[data-is-closed="true"]'));
+            if (!closedCards.length) return;
+
+            const seen = new Set(getSeenClosedTickets());
+            let hasNewClosedTicket = false;
+
+            closedCards.forEach(card => {
+                const ticketId = card.getAttribute('data-ticket-id');
+                if (ticketId && !seen.has(ticketId)) {
+                    hasNewClosedTicket = true;
+                    seen.add(ticketId);
+                }
+            });
+
+            if (hasNewClosedTicket) {
+                setSeenClosedTickets(Array.from(seen));
+                showClosedTicketModal();
+            }
+        }
+
+        function startClosedTicketsPolling() {
+            if (pollIntervalId) return;
+            pollIntervalId = setInterval(() => {
+                const userId = document.getElementById('user_id_input')?.value || new URLSearchParams(window.location.search).get('user_id');
+                const historyContainer = document.getElementById('history-list-container');
+                if (!userId || !historyContainer) return;
+
+                htmx.ajax('GET', `{% url 'feedback:load_more_tickets' %}?offset=0&user_id=${encodeURIComponent(userId)}`, {
+                    target: '#history-list-container',
+                    swap: 'innerHTML'
+                });
+            }, 30000);
+        }
 
         // Time Formatting
         function updateAllTimes() {
@@ -462,10 +537,12 @@
                 }
             }
             updateAllTimes();
+            detectNewlyClosedTickets();
         }
 
         // Initial setup
         setupLogic();
+        startClosedTicketsPolling();
 
         // HTMX Hooks
         document.body.addEventListener('htmx:afterSettle', (evt) => {
