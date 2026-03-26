@@ -327,7 +327,7 @@
         </div>
     </div>
 
-    <div id="confirm-modal">
+    closed-ticket-modal
         <div class="modal-box text-center">
             <img src="{% static 'feedback/huh.png' %}" class="w-20 mx-auto mb-4">
             <h3 class="text-black font-bold text-sm uppercase mb-2">Aniqmi?</h3>
@@ -403,7 +403,12 @@
                 values: { 'user_id': currentUserId },
                 headers: { 'X-CSRFToken': currentToken }
             });
+
+            // Показываем подтверждение закрытия сразу после действия пользователя.
+            showClosedTicketModal();
         };
+
+        
 
         function showClosedTicketModal() {
             const modal = document.getElementById('closed-ticket-modal');
@@ -560,7 +565,10 @@
         setupLogic();
         // Защита от падения всего скрипта, если polling-функция удалена/не подключена.
         if (typeof startClosedTicketsPolling === 'function') {
+            // Защита от падения всего скрипта, если polling-функция удалена/не подключена.
+        if (typeof startClosedTicketsPolling === 'function') {
             startClosedTicketsPolling();
+        }
         }
 
         // HTMX Hooks
