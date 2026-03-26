@@ -55,7 +55,11 @@ def close_ticket(request, ticket_id):
         ticket.save()
         
         user_id = request.POST.get('user_id') or ticket.user_id
+        # Получаем данные истории
         context = get_history_context(user_id)
+        # Обязательно добавляем user_id в контекст явно, если шаблон его ждет
+        context['user_id'] = user_id 
+        
         return render(request, 'feedback/index.html', context)
     return HttpResponse("Metod xato", status=400)
 
