@@ -15,7 +15,7 @@
             background-color: var(--dark-bg);
             font-family: 'Unbounded', sans-serif;
             margin: 0; min-height: 100vh; color: white;
-            overflow: hidden; 
+            overflow-x: hidden; 
         }
 
         #preloader {
@@ -97,7 +97,6 @@
         .preserve-lines { white-space: pre-wrap; word-break: break-all; }
         .hidden { display: none !important; }
 
-        /* --- СТИЛИ ДЛЯ BUBBLE --- */
         .speech-bubble {
             background: white; color: black; 
             padding: 6px 12px;
@@ -119,7 +118,6 @@
         .bubble-center { border-radius: 16px; }
         .bubble-left { border-radius: 16px 16px 16px 0; left: -8px; }
 
-        /* --- СТИЛИ МОДАЛЬНОГО ОКНА CONFIRM --- */
         #confirm-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(12, 10, 20, 0.8); backdrop-filter: blur(8px);
@@ -195,7 +193,7 @@
                         <div class="w-10 h-10 rounded-full border-2 border-black neo-avatar shadow-[3px_3px_0px_#000000]"></div>
                     </div>
                     
-                    <form id="feedback-form" hx-post="{% url 'submit_feedback' %}" hx-target="#form-container" hx-select="#form-container" class="space-y-5">
+                    <form id="feedback-form" hx-post="{% url 'feedback:submit_feedback' %}" hx-target="#form-container" hx-select="#form-container" class="space-y-5">
                         {% csrf_token %}
                         <input type="hidden" name="user_id" id="user_id_input" value="{{ user_id }}">
                         <input type="hidden" name="username" id="username_input">
@@ -244,7 +242,7 @@
                     <h3 class="text-[10px] font-bold uppercase tracking-[3px] text-white/50">Mening murojaatlarim</h3>
                     
                     <button 
-                        hx-get="{% url 'load_more_tickets' %}?user_id={{ user_id }}&offset=0" 
+                        hx-get="{% url 'feedback:load_more_tickets' %}?user_id={{ user_id }}&offset=0" 
                         hx-target="#history-list-container" 
                         hx-swap="innerHTML"
                         onclick="tg.HapticFeedback.impactOccurred('light')"
@@ -282,7 +280,7 @@
                             </div>
 
                             {% if not item.is_closed %}
-                                <form hx-post="{% url 'reply_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" class="mt-4 flex items-center space-x-2 mb-4">
+                                <form hx-post="{% url 'feedback:reply_ticket' item.id %}" hx-target="#form-container" hx-select="#form-container" class="mt-4 flex items-center space-x-2 mb-4">
                                     {% csrf_token %}
                                     <input type="hidden" name="user_id" value="{{ user_id }}">
                                     <input type="text" name="new_reply" placeholder="Xabar yozish..." required class="neo-input flex-1 px-3 py-2 text-[10px] h-10 font-bold focus:outline-none bg-white/90">
@@ -297,11 +295,12 @@
                                     </div>
                                     
                                     <button 
-                                        type="button" 
-                                        onclick="showConfirmModal('{% url 'close_ticket' item.id %}', '{{ user_id }}', '{{ csrf_token }}')"
-                                        class="text-[8px] font-bold bg-[#ad88b9] text-white px-3 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000000] uppercase transition-transform active:translate-y-1 active:shadow-none">
-                                        Yopish
-                                    </button>
+    type="button"
+    data-url="{% url 'feedback:close_ticket' item.id %}"
+    onclick="showConfirmModal(this.getAttribute('data-url'), '{{ user_id }}', '{{ csrf_token }}')"
+    class="...">
+    Yopish
+</button>
                                 </div>
                             {% else %}
                                 <div class="pt-4 border-t border-white/10 text-[8px] font-bold uppercase text-white/20 tracking-widest text-center flex items-center justify-center">
@@ -314,7 +313,7 @@
                     
                     {% if has_more_tickets %}
                     <button id="load-more-btn"
-                            hx-get="{% url 'load_more_tickets' %}?offset={{ next_offset }}&user_id={{ user_id }}"
+                            hx-get="{% url 'feedback:load_more_tickets' %}?offset={{ next_offset }}&user_id={{ user_id }}"
                             hx-target="this" 
                             hx-swap="outerHTML"
                             onclick="tg.HapticFeedback.impactOccurred('medium')"
@@ -352,13 +351,10 @@
         tg.ready(); tg.expand(); tg.setHeaderColor('#0c0a14');
 
         let activeTicketId = null;
-        
-        // MODAL UCHUN O'ZGARUVCHILAR
         let currentActionUrl = null;
         let currentUserId = null;
         let currentToken = null;
 
-        // MODALNI OCHISH
         window.showConfirmModal = function(url, userId, token) {
             currentActionUrl = url;
             currentUserId = userId;
@@ -368,18 +364,15 @@
             tg.HapticFeedback.notificationOccurred('warning');
         };
 
-        // YO'Q TUGMASI
         document.getElementById('confirm-no').onclick = () => {
             document.getElementById('confirm-modal').classList.remove('show');
             tg.HapticFeedback.impactOccurred('light');
         };
 
-        // HA TUGMASI
         document.getElementById('confirm-yes').onclick = () => {
             document.getElementById('confirm-modal').classList.remove('show');
             tg.HapticFeedback.impactOccurred('medium');
             
-            // HTMX so'rovini yuborish
             htmx.ajax('POST', currentActionUrl, {
                 target: '#form-container',
                 select: '#form-container',
