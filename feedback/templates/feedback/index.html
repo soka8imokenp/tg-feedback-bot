@@ -558,7 +558,10 @@
 
         // Initial setup
         setupLogic();
-        startClosedTicketsPolling();
+        // Защита от падения всего скрипта, если polling-функция удалена/не подключена.
+        if (typeof startClosedTicketsPolling === 'function') {
+            startClosedTicketsPolling();
+        }
 
         // HTMX Hooks
         document.body.addEventListener('htmx:afterSettle', (evt) => {
