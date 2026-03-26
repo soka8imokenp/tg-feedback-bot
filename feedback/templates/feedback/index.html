@@ -245,7 +245,7 @@
                         hx-get="{% url 'feedback:load_more_tickets' %}?offset=0&user_id={{ user_id }}"
                         hx-target="#history-list-container"
                         hx-swap="innerHTML"
-                        onclick="tg.HapticFeedback.impactOccurred('light')"
+                        onclick="markManualHistoryLoad(); tg.HapticFeedback.impactOccurred('light')"
                         class="text-[#ad88b9] text-[9px] font-bold uppercase flex items-center gap-1 active:scale-90 transition-transform">
                         <span>Yopish</span>
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
@@ -341,10 +341,10 @@
 
     <div id="closed-ticket-modal" class="hidden fixed inset-0 z-[10001] bg-[#0c0a14] flex items-center justify-center p-6">
         <div class="max-w-sm w-full text-center space-y-5">
-            <img src="{% static 'feedback/huh.png' %}" class="w-52 mx-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]" alt="Murojaat yopildi">
+            <img src="{% static 'feedback/soldier.png' %}" class="w-52 mx-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]" alt="Murojaat yopildi">
             <h3 class="text-2xl font-bold uppercase tracking-tight">Murojaat yopildi</h3>
             <p class="text-[11px] text-white/60 uppercase font-bold tracking-widest leading-relaxed">
-                Bu murojaat bo'yicha ish yakunlandi ✨
+                Bu murojaat bo'yicha ish yakunlandi 
             </p>
             <button id="closed-ticket-ok" class="neo-btn w-full py-4 text-xs font-bold uppercase tracking-widest">
                 Tushunarli
@@ -372,8 +372,10 @@
         let currentActionUrl = null;
         let currentUserId = null;
         let currentToken = null;
-        let pollIntervalId = null;
         const CLOSED_TICKETS_STORAGE_KEY = 'kawaii_closed_ticket_ids';
+        const CLOSED_TICKETS_INITIALIZED_KEY = 'kawaii_closed_ticket_ids_initialized';
+        let closedTicketDetectionSource = 'init';
+        
 
         // Modal Logic
         window.showConfirmModal = function(url, userId, token) {
@@ -393,6 +395,7 @@
         document.getElementById('confirm-yes').onclick = () => {
             document.getElementById('confirm-modal').classList.remove('show');
             tg.HapticFeedback.impactOccurred('medium');
+            closedTicketDetectionSource = 'close_action';
             
             htmx.ajax('POST', currentActionUrl, {
                 target: '#form-container',
@@ -429,38 +432,31 @@
 
         function detectNewlyClosedTickets() {
             const closedCards = Array.from(document.querySelectorAll('.history-card[data-is-closed="true"]'));
-            if (!closedCards.length) return;
+            const currentClosedIds = closedCards
+                .map(card => card.getAttribute('data-ticket-id'))
+                .filter(Boolean);
 
             const seen = new Set(getSeenClosedTickets());
-            let hasNewClosedTicket = false;
+            const isInitialized = localStorage.getItem(CLOSED_TICKETS_INITIALIZED_KEY) === '1';
+            const newClosedIds = currentClosedIds.filter(id => !seen.has(id));
+            const shouldNotify =
+                isInitialized &&
+                newClosedIds.length > 0 &&
+                (closedTicketDetectionSource === 'close_action' || closedTicketDetectionSource === 'init');
 
-            closedCards.forEach(card => {
-                const ticketId = card.getAttribute('data-ticket-id');
-                if (ticketId && !seen.has(ticketId)) {
-                    hasNewClosedTicket = true;
-                    seen.add(ticketId);
-                }
-            });
+            currentClosedIds.forEach(id => seen.add(id));
+            setSeenClosedTickets(Array.from(seen));
+            localStorage.setItem(CLOSED_TICKETS_INITIALIZED_KEY, '1');
+            closedTicketDetectionSource = 'init';
 
-            if (hasNewClosedTicket) {
-                setSeenClosedTickets(Array.from(seen));
+            if (shouldNotify) {
                 showClosedTicketModal();
             }
         }
 
-        function startClosedTicketsPolling() {
-            if (pollIntervalId) return;
-            pollIntervalId = setInterval(() => {
-                const userId = document.getElementById('user_id_input')?.value || new URLSearchParams(window.location.search).get('user_id');
-                const historyContainer = document.getElementById('history-list-container');
-                if (!userId || !historyContainer) return;
-
-                htmx.ajax('GET', `{% url 'feedback:load_more_tickets' %}?offset=0&user_id=${encodeURIComponent(userId)}`, {
-                    target: '#history-list-container',
-                    swap: 'innerHTML'
-                });
-            }, 30000);
-        }
+        window.markManualHistoryLoad = function() {
+            closedTicketDetectionSource = 'manual';
+        };
 
         // Time Formatting
         function updateAllTimes() {
