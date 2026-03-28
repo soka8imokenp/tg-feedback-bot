@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Admin Dashboard</title>
+</head>
+<body class="bg-[#0c0a14] text-white min-h-screen p-4">
+    <div class="max-w-6xl mx-auto space-y-4">
+        <div class="bg-[#1a1626] border border-white/20 rounded-2xl p-4">
+            <p class="text-[10px] uppercase tracking-[3px] text-[#ad88b9]">Admin panel</p>
+            <h1 class="text-2xl font-bold">Xush kelibsiz, {{ staff_user.username }}</h1>
+            <p class="text-sm text-white/60 mt-1">Jami ticketlar: {{ tickets|length }}</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <aside class="lg:col-span-1 bg-[#1a1626] border border-white/20 rounded-2xl p-3 max-h-[80vh] overflow-y-auto">
+                <p class="text-xs uppercase text-white/50 px-2 pb-2">Ticketlar</p>
+
+                <div class="space-y-2">
+                    {% for ticket in tickets %}
+                    <button
+                        hx-get="{% url 'feedback:admin_ticket_chat' ticket.id %}?user_id={{ user_id }}"
+                        hx-target="#admin-chat-panel"
+                        hx-swap="innerHTML"
+                        class="w-full text-left p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold">#{{ ticket.id }} · {{ ticket.get_category_display }}</span>
+                            {% if ticket.is_closed %}
+                                <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                            {% elif ticket.is_answered %}
+                                <span class="w-2 h-2 rounded-full bg-green-400"></span>
+                            {% else %}
+                                <span class="w-2 h-2 rounded-full bg-red-400"></span>
+                            {% endif %}
+                        </div>
+                        <p class="text-sm mt-1 font-semibold truncate">{{ ticket.subject }}</p>
+                        <p class="text-[11px] text-white/60 mt-1">@{{ ticket.username }} · {{ ticket.updated_at|date:"d.m H:i" }}</p>
+                    </button>
+                    {% empty %}
+                    <div class="text-sm text-white/50 px-2 py-4">Hozircha ticketlar yo'q.</div>
+                    {% endfor %}
+                </div>
+            </aside>
+
+            <section id="admin-chat-panel" class="lg:col-span-2 bg-[#1a1626] border border-white/20 rounded-2xl p-4 min-h-[65vh]">
+                {% include 'feedback/partials/admin_ticket_chat.html' with selected_ticket=selected_ticket messages=messages user_id=user_id %}
+            </section>
+        </div>
+    </div>
+</body>
+</html>

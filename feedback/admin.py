@@ -1,7 +1,20 @@
 from django.contrib import admin
 from django import forms
 from django.utils import timezone
-from .models import Application
+from .models import Application, Message, Profile
+
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "telegram_id")
+    search_fields = ("user__username", "telegram_id")
+
+
+class MessageInline(admin.TabularInline):
+    model = Message
+    extra = 0
+    readonly_fields = ("created_at",)
+    fields = ("text", "is_from_admin", "created_at")
 
 # 1. Создаем правильную форму для админки с нашим кастомным полем
 class ApplicationAdminForm(forms.ModelForm):
@@ -24,6 +37,7 @@ class ApplicationAdminForm(forms.ModelForm):
 class ApplicationAdmin(admin.ModelAdmin):
     # Указываем Django использовать нашу форму!
     form = ApplicationAdminForm
+    inlines = [MessageInline]
 
     # Настройки списка
     list_display = ('subject', 'username', 'category', 'is_answered', 'is_closed', 'created_at')
@@ -37,7 +51,7 @@ class ApplicationAdmin(admin.ModelAdmin):
         ('Asosiy ma\'lumotlar', {
             'fields': ('user_id', 'username', 'category', 'subject', 'is_closed', 'is_answered')
         }),
-        ('Chat', {
+        ('Legacy Chat (JSON)', {
             'fields': ('chat_history',),
         }),
         ('Javob berish', {
@@ -58,7 +72,7 @@ class ApplicationAdmin(admin.ModelAdmin):
                 'time': timezone.now().strftime("%H:%M")
             }
             
-            # Обновляем JSON
+            # Обновляем JSON (legacy)
             history = list(obj.chat_history) if obj.chat_history else []
             history.append(new_message)
             obj.chat_history = history
@@ -68,3 +82,10 @@ class ApplicationAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 admin.site.register(Application, ApplicationAdmin)
+
+
+@admin.register(Message)
+class MessageAdmin(admin.ModelAdmin):
+    list_display = ("application", "is_from_admin", "created_at")
+    list_filter = ("is_from_admin", "created_at")
+    search_fields = ("application__subject", "application__username", "text")

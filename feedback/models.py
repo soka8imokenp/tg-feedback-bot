@@ -1,6 +1,20 @@
 import os
 import requests
 from django.db import models
+from django.contrib.auth.models import User
+
+
+class Profile(models.Model):
+    """Связка Django-пользователя с Telegram ID."""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    telegram_id = models.BigIntegerField(unique=True, db_index=True)
+
+    class Meta:
+        verbose_name = "Profil"
+        verbose_name_plural = "Profillar"
+
+    def __str__(self):
+        return f"@{self.user.username} ({self.telegram_id})"
 
 class Application(models.Model):
     TYPES = [
@@ -75,3 +89,20 @@ class Application(models.Model):
             requests.post(url, json=payload, timeout=5)
         except Exception as e:
             print(f"Telegram notification error: {e}")
+
+
+class Message(models.Model):
+    """Нормализованная история сообщений по тикету."""
+    application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='messages')
+    text = models.TextField(verbose_name="Xabar")
+    is_from_admin = models.BooleanField(default=False, verbose_name="Admindan")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yuborilgan vaqt")
+
+    class Meta:
+        verbose_name = "Xabar"
+        verbose_name_plural = "Xabarlar"
+        ordering = ["created_at"]
+
+    def __str__(self):
+        sender = "ADMIN" if self.is_from_admin else "USER"
+        return f"{sender} #{self.application_id}: {self.text[:40]}"

@@ -7,6 +7,12 @@ app_name = 'feedback'
 urlpatterns = [
     # Главная страница (Список тикетов)
     path('', views.index, name='feedback_index'),
+
+    # Admin WebApp panel
+    path('admin/ticket/<int:ticket_id>/chat/', views.admin_ticket_chat, name='admin_ticket_chat'),
+    path('admin/ticket/<int:ticket_id>/reply/', views.admin_reply_ticket, name='admin_reply_ticket'),
+
+    # User WebApp flow
     
     # Отправка новой формы
     path('submit/', views.submit_feedback, name='submit_feedback'),
