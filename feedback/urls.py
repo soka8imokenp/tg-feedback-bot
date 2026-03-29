@@ -13,8 +13,6 @@ urlpatterns = [
     path('admin/ticket/<int:ticket_id>/reply/', views.admin_reply_ticket, name='admin_reply_ticket'),
 
     # User WebApp flow
-    
-    # Отправка новой формы
     path('submit/', views.submit_feedback, name='submit_feedback'),
     
     # Закрытие тикета (убедитесь, что в views.py функция принимает ticket_id)

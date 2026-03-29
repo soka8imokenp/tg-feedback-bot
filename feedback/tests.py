@@ -1,9 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from django.urls import reverse
-from unittest.mock import patch
 
-# Create your tests here.
 from .models import Application, Message, Profile
 
 
@@ -63,22 +61,4 @@ class IndexRoutingTests(TestCase):
             {"user_id": "999"},
         )
         self.assertEqual(response.status_code, 403)
-
-    @override_settings(STATICFILES_STORAGE="django.contrib.staticfiles.storage.StaticFilesStorage")
-    @patch("feedback.views.WEBAPP_URL", "https://example.com/app")
-    @patch("feedback.views.requests.post")
-    def test_user_message_sends_admin_webapp_button(self, mocked_post):
-        response = self.client.post(
-            reverse("feedback:reply_ticket", args=[self.ticket.id]),
-            {"user_id": "999", "new_reply": "Need help"},
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(mocked_post.called)
-
-        last_call = mocked_post.call_args_list[-1]
-        sent_json = last_call.kwargs.get("json", {})
-        self.assertIn("reply_markup", sent_json)
-        button = sent_json["reply_markup"]["inline_keyboard"][0][0]
-        self.assertIn("web_app", button)
-        self.assertIn("user_id=999", button["web_app"]["url"])
+    

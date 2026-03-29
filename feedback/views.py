@@ -79,17 +79,10 @@ def _build_ticket_messages(ticket):
             }
         )
     return normalized
-def _build_admin_webapp_link(user_id):
-    """Строит deep-link в Mini App для быстрого ответа по конкретному пользователю."""
-    if not WEBAPP_URL:
-        return None
-
-    separator = '&' if '?' in WEBAPP_URL else '?'
-    return f"{WEBAPP_URL}{separator}user_id={user_id}"
 
 
 def _send_admin_notification(ticket, message_text):
-    """Уведомление админу с кнопкой открытия WebApp."""
+    """Уведомление админу без кнопок."""
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {
         "chat_id": ADMIN_ID,
@@ -97,23 +90,11 @@ def _send_admin_notification(ticket, message_text):
         "parse_mode": "HTML",
     }
 
-    webapp_link = _build_admin_webapp_link(ticket.user_id)
-    if webapp_link:
-        payload["reply_markup"] = {
-            "inline_keyboard": [
-                [
-                    {
-                        "text": "💬 WebApp'da javob berish",
-                        "web_app": {"url": webapp_link},
-                    }
-                ]
-            ]
-        }
-
     try:
         requests.post(url, json=payload, timeout=5)
     except Exception:
         pass
+
 
 def index(request):
     user_id = request.GET.get('user_id') or request.POST.get('user_id')
@@ -139,6 +120,7 @@ def index(request):
         context.update(history_data)
     
     return render(request, 'feedback/index.html', context)
+
 
 def admin_ticket_chat(request, ticket_id):
     user_id, staff_user = _staff_from_request(request)
@@ -183,22 +165,8 @@ def admin_reply_ticket(request, ticket_id):
         ticket.updated_at = timezone.now()
         ticket.save()
 
-        # Уведомление пользователю в Telegram.
-        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-        message_text = (
-            f"✉️ <b>Qo'llab-quvvatlash xizmatidan javob:</b>\n\n"
-            f"{reply_text}"
-        )
-        try:
-            requests.post(
-                url,
-                data={"chat_id": ticket.user_id, "text": message_text, "parse_mode": "HTML"},
-                timeout=5,
-            )
-        except Exception:
-            pass
-
-    return admin_ticket_chat(request, ticket_id)    
+    return admin_ticket_chat(request, ticket_id)
+           
 
 def load_more_tickets(request):
     user_id = request.GET.get('user_id')
@@ -209,6 +177,7 @@ def load_more_tickets(request):
 
     context = get_history_context(user_id, limit=limit, offset=offset)
     return render(request, 'feedback/partials/ticket_list.html', context)
+
 
 def close_ticket(request, ticket_id):
     if request.method == 'POST':
@@ -224,6 +193,7 @@ def close_ticket(request, ticket_id):
         
         return render(request, 'feedback/index.html', context)
     return HttpResponse("Metod xato", status=400)
+
 
 def reply_ticket(request, ticket_id):
     """
