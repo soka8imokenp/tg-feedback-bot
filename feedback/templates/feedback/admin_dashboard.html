@@ -7,7 +7,7 @@
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <title>Admin Dashboard</title>
-    <style>
+     <style>
         :root {
             --accent: #ad88b9;
             --dark-bg: #0c0a14;
@@ -15,24 +15,18 @@
 
         .game-btn {
             position: relative;
-            background: #ffffff;
-            border: 3px solid #000000;
-            color: #38bdf8;
-            border-radius: 18px 28px 18px 28px;
-            clip-path: polygon(6% 0%, 94% 0%, 100% 24%, 96% 100%, 4% 100%, 0% 24%);
-            box-shadow: 0 10px 0 #000000, 0 14px 24px rgba(56, 189, 248, 0.35);
-            animation: gamePulse 1.8s ease-in-out infinite, gameTilt 2.8s ease-in-out infinite;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #ffffff !important;
+            border: 3px solid #000000 !important;
+            color: #38bdf8 !important;
+            border-radius: 26px 26px 18px 18px;
+            box-shadow: 0 8px 0 #000000, 0 14px 24px rgba(56, 189, 248, 0.25);
+            animation: gamePulse 1.8s ease-in-out infinite;
             transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .game-btn::after {
-            content: "★";
-            position: absolute;
-            right: 14px;
-            top: 8px;
-            font-size: 14px;
-            color: #0ea5e9;
-            animation: sparkle 1.2s ease-in-out infinite;
         }
 
         .game-btn:active {
@@ -44,17 +38,6 @@
         @keyframes gamePulse {
             0%, 100% { transform: translateY(0) scale(1); }
             50% { transform: translateY(-2px) scale(1.02); }
-        }
-
-        @keyframes gameTilt {
-            0%, 100% { rotate: 0deg; }
-            25% { rotate: -0.6deg; }
-            75% { rotate: 0.6deg; }
-        }
-
-        @keyframes sparkle {
-            0%, 100% { opacity: 0.5; transform: scale(0.9) rotate(0deg); }
-            50% { opacity: 1; transform: scale(1.2) rotate(15deg); }
         }
     </style>
 </head>
