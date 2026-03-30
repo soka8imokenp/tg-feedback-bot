@@ -61,11 +61,17 @@
 <body class="bg-[#0c0a14] text-white min-h-screen p-4">
     <section id="admin-welcome" class="fixed inset-0 z-50 bg-[#0c0a14]">
         <div class="relative w-full h-full overflow-hidden">
-            <img
-                src="{% static 'feedback/hello_admin.png' %}"
-                alt="Hello Admin"
+            <video
+                id="admin-welcome-video"
                 class="absolute inset-0 w-full h-full object-cover"
+                poster="{% static 'feedback/hello_admin.png' %}"
+                autoplay
+                muted
+                playsinline
+                preload="auto"
             >
+                Ваш браузер не поддерживает видео.
+            </video>
             <div class="bottom-sheet">
                 <button
                     id="ganbatte-btn"
@@ -126,11 +132,39 @@
         const welcomeScreen = document.getElementById('admin-welcome');
         const adminPanel = document.getElementById('admin-panel');
         const enterButton = document.getElementById('ganbatte-btn');
+        const welcomeVideo = document.getElementById('admin-welcome-video');
+
+        const adminVideos = [
+            "{% static 'feedback/hello_admin_1.mp4' %}",
+            "{% static 'feedback/hello_admin_2.mp4' %}",
+            "{% static 'feedback/hello_admin_3.mp4' %}",
+            "{% static 'feedback/hello_admin_4.mp4' %}",
+        ];
+
+        function setupWelcomeVideo() {
+            if (!welcomeVideo || !adminVideos.length) return;
+
+            const randomIndex = Math.floor(Math.random() * adminVideos.length);
+            const selectedVideo = adminVideos[randomIndex];
+
+            welcomeVideo.src = selectedVideo;
+            welcomeVideo.muted = true;
+            welcomeVideo.loop = false;
+
+            const playPromise = welcomeVideo.play();
+            if (playPromise && typeof playPromise.catch === 'function') {
+                playPromise.catch(() => {
+                    // poster останется как fallback, если autoplay ограничен
+                });
+            }
+        }
 
         enterButton.addEventListener('click', function () {
             welcomeScreen.classList.add('hidden');
             adminPanel.classList.remove('hidden');
         });
+
+        setupWelcomeVideo();
     </script>
 </body>
 </html>
