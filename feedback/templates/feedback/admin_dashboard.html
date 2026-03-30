@@ -7,9 +7,46 @@
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <title>Admin Dashboard</title>
+    <style>
+        :root {
+            --accent: #ad88b9;
+            --dark-bg: #0c0a14;
+        }
+
+        .neo-btn {
+            background-color: var(--accent);
+            border: 2px solid #000000;
+            box-shadow: 4px 4px 0px #000000;
+            border-radius: 22px;
+            color: white;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .neo-btn:active {
+            box-shadow: 0px 0px 0px #000000;
+            transform: translate(3px, 3px);
+        }
+    </style>
 </head>
 <body class="bg-[#0c0a14] text-white min-h-screen p-4">
-    <div class="max-w-6xl mx-auto space-y-4">
+    <section id="admin-welcome" class="fixed inset-0 z-50 bg-[#0c0a14]">
+        <div class="relative w-full h-full overflow-hidden">
+            <img
+                src="{% static 'feedback/hello_admin.png' %}"
+                alt="Hello Admin"
+                class="w-full h-full object-cover"
+            >
+            <button
+                id="ganbatte-btn"
+                class="neo-btn absolute left-4 right-4 bottom-6 py-5 text-sm font-bold uppercase tracking-widest text-white"
+                type="button"
+            >
+                Ganbatte
+            </button>
+        </div>
+    </section>
+
+    <div id="admin-panel" class="max-w-6xl mx-auto space-y-4 hidden">
         <div class="bg-[#1a1626] border border-white/20 rounded-2xl p-4">
             <p class="text-[10px] uppercase tracking-[3px] text-[#ad88b9]">Admin panel</p>
             <h1 class="text-2xl font-bold">Xush kelibsiz, {{ staff_user.username }}</h1>
@@ -51,5 +88,16 @@
             </section>
         </div>
     </div>
+
+    <script>
+        const welcomeScreen = document.getElementById('admin-welcome');
+        const adminPanel = document.getElementById('admin-panel');
+        const enterButton = document.getElementById('ganbatte-btn');
+
+        enterButton.addEventListener('click', function () {
+            welcomeScreen.classList.add('hidden');
+            adminPanel.classList.remove('hidden');
+        });
+    </script>
 </body>
 </html>
