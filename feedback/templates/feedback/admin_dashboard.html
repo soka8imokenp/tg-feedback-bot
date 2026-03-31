@@ -113,8 +113,9 @@
                         hx-get="{% url 'feedback:admin_ticket_chat' ticket.id %}?user_id={{ user_id }}"
                         hx-target="#admin-chat-panel"
                         hx-swap="innerHTML"
-                        class="w-full text-left p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition">
-                        <div class="flex items-center justify-between">
+                        class="w-full text-left p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition"
+                        style="box-shadow: 0 0 0 1px rgba(156, 163, 175, 0.55), 0 0 14px rgba(107, 114, 128, 0.55);">
+                        <div class="flex items-center justify-between"></div>
                             <span class="text-xs font-bold text-black">#{{ ticket.id }} · {{ ticket.get_category_display }}</span>
                             {% if ticket.is_closed %}
                                 <span class="w-2 h-2 rounded-full bg-gray-400"></span>
@@ -135,10 +136,10 @@
 
             <section
                 id="admin-chat-panel"
-                class="lg:col-span-2 border border-white/20 rounded-2xl p-4 min-h-[65vh] relative overflow-hidden"
+                class="lg:col-span-2 border-2 border-black rounded-2xl p-4 min-h-[65vh] relative overflow-hidden shadow-[8px_8px_0px_#000000]"
                 style="background-image: url('{% static 'feedback/4.png' %}'); background-size: cover; background-position: center;"
             >
-                <div class="absolute inset-0 bg-[#1a1626]/80"></div>
+                <div class="absolute inset-0 bg-white/85"></div>
                 <div class="relative z-10">
                     {% include 'feedback/partials/admin_ticket_chat.html' with selected_ticket=selected_ticket messages=messages user_id=user_id %}
                 </div>
