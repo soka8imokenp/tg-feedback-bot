@@ -104,8 +104,8 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <aside class="lg:col-span-1 bg-[#1a1626] border border-white/20 rounded-2xl p-3 max-h-[80vh] overflow-y-auto">
-                <p class="text-xs uppercase text-white/50 px-2 pb-2">Ticketlar</p>
+            <aside class="lg:col-span-1 bg-white border border-black/15 rounded-2xl p-3 max-h-[80vh] overflow-y-auto">
+                <p class="text-xs uppercase text-black/60 px-2 pb-2">Ticketlar</p>
 
                 <div class="space-y-2">
                     {% for ticket in tickets %}
@@ -115,7 +115,7 @@
                         hx-swap="innerHTML"
                         class="w-full text-left p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold">#{{ ticket.id }} · {{ ticket.get_category_display }}</span>
+                            <span class="text-xs font-bold text-black">#{{ ticket.id }} · {{ ticket.get_category_display }}</span>
                             {% if ticket.is_closed %}
                                 <span class="w-2 h-2 rounded-full bg-gray-400"></span>
                             {% elif ticket.is_answered %}
@@ -124,17 +124,24 @@
                                 <span class="w-2 h-2 rounded-full bg-red-400"></span>
                             {% endif %}
                         </div>
-                        <p class="text-sm mt-1 font-semibold truncate">{{ ticket.subject }}</p>
-                        <p class="text-[11px] text-white/60 mt-1">@{{ ticket.username }} · {{ ticket.updated_at|date:"d.m H:i" }}</p>
+                        <p class="text-sm mt-1 font-semibold truncate text-black">{{ ticket.subject }}</p>
+                        <p class="text-[11px] text-black/60 mt-1">@{{ ticket.username }} · {{ ticket.updated_at|date:"d.m H:i" }}</p>
                     </button>
                     {% empty %}
-                    <div class="text-sm text-white/50 px-2 py-4">Hozircha ticketlar yo'q.</div>
+                    <div class="text-sm text-black/50 px-2 py-4">Hozircha ticketlar yo'q.</div>
                     {% endfor %}
                 </div>
             </aside>
 
-            <section id="admin-chat-panel" class="lg:col-span-2 bg-[#1a1626] border border-white/20 rounded-2xl p-4 min-h-[65vh]">
-                {% include 'feedback/partials/admin_ticket_chat.html' with selected_ticket=selected_ticket messages=messages user_id=user_id %}
+            <section
+                id="admin-chat-panel"
+                class="lg:col-span-2 border border-white/20 rounded-2xl p-4 min-h-[65vh] relative overflow-hidden"
+                style="background-image: url('{% static 'feedback/4.png' %}'); background-size: cover; background-position: center;"
+            >
+                <div class="absolute inset-0 bg-[#1a1626]/80"></div>
+                <div class="relative z-10">
+                    {% include 'feedback/partials/admin_ticket_chat.html' with selected_ticket=selected_ticket messages=messages user_id=user_id %}
+                </div>
             </section>
         </div>
     </div>
