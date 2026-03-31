@@ -21,7 +21,7 @@
     {% if not selected_ticket.is_closed %}
     <form
         hx-post="{% url 'feedback:admin_reply_ticket' selected_ticket.id %}"
-        hx-target="#admin-chat-panel"
+        hx-target="#admin-chat-content"
         hx-swap="innerHTML"
         class="space-y-2">
         {% csrf_token %}
