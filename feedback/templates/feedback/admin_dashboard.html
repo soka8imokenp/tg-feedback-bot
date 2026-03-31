@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&display=swap" rel="stylesheet">
     <title>Soft Retro Admin</title>
     <style>
+        * { box-sizing: border-box; }
         :root {
             --bg-main: #F4F9FF;       
             --accent-blue: #82B3FB;   /* Тот самый голубой */
@@ -22,8 +23,11 @@
             background-color: var(--bg-main);
             color: var(--dark);
             margin: 0;
-            padding: 30px;
+            padding: 12px;
             letter-spacing: -0.02em;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
         }
 
         /* --- Слой приветствия --- */
@@ -34,6 +38,7 @@
             background: var(--bg-main);
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
         .cta-btn {
@@ -58,12 +63,13 @@
 
         /* --- Основная оболочка --- */
         .neo-shell {
+            width: 100%;
             max-width: 1400px;
             margin: 0 auto;
             display: grid;
             grid-template-rows: auto 1fr;
-            gap: 25px;
-            min-height: calc(100vh - 60px);
+            gap: 12px;
+            min-height: calc(100vh - 24px);
         }
 
         .neo-topbar {
@@ -86,8 +92,8 @@
 
         .neo-layout {
             display: grid;
-            grid-template-columns: 400px 1fr;
-            gap: 30px;
+            grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
+            gap: 12px;
             min-height: 0;
         }
 
@@ -182,18 +188,39 @@
         /* Красивый скроллбар */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-thumb { background: var(--accent-blue); border-radius: 10px; }
+
+        @media (max-width: 1024px) {
+            body { padding: 10px; }
+            .neo-shell { min-height: calc(100vh - 20px); }
+            .neo-layout { grid-template-columns: 1fr; }
+            .neo-topbar {
+                padding: 16px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .tickets-list { max-height: 42vh; }
+            #admin-chat-content { padding: 16px !important; }
+        }
+
+        @media (max-width: 640px) {
+            .chat-header { padding: 12px; }
+            .chat-input-area { padding: 12px; }
+            .chat-input-area .flex { gap: 8px; }
+            .send-btn { padding: 10px 14px; font-size: 10px; }
+            .cta-btn { padding: 16px; font-size: 16px; }
+        }
     </style>
 </head>
 <body>
 
     <section id="admin-welcome" class="welcome-layer">
         <div class="relative w-full h-full overflow-hidden flex flex-col justify-end bg-white">
-            <video id="admin-welcome-video" class="absolute inset-0 w-full h-full object-cover opacity-80 -z-10" autoplay muted playsinline></video>
-            <div id="video-overlay-text" class="absolute inset-0 flex flex-col items-center justify-center hidden bg-white/40 backdrop-blur-md">
-                <h2 class="text-7xl font-black uppercase text-[#82B3FB] drop-shadow-md">Kawaii</h2>
-                <p class="tracking-[0.5em] font-bold text-gray-400 mt-4">SUPPORT INTERFACE</p>
+            <video id="admin-welcome-video" class="absolute inset-0 w-full h-full object-cover opacity-90 z-0" autoplay muted playsinline loop preload="auto"></video>
+            <div id="video-overlay-text" class="absolute inset-0 flex flex-col items-center justify-center z-10 bg-white/35 backdrop-blur-[1px]">
+                <h2 class="text-5xl sm:text-7xl font-black uppercase text-[#82B3FB] drop-shadow-md text-center px-3">Kawaii</h2>
+                <p class="tracking-[0.35em] sm:tracking-[0.5em] font-bold text-gray-500 mt-4 text-xs sm:text-sm text-center px-3">SUPPORT SERVICE</p>
             </div>
-            <div class="p-10 z-20 pb-16 mx-auto w-full max-w-md">
+            <div class="p-6 sm:p-10 z-20 pb-10 sm:pb-16 mx-auto w-full max-w-md">
                 <button id="ganbatte-btn" class="cta-btn">Ganbatte</button>
             </div>
         </div>
@@ -270,8 +297,11 @@
 
         if (welcomeVideo) {
             welcomeVideo.src = videoSrc;
-            welcomeVideo.addEventListener('ended', () => {
-                videoOverlayText.classList.remove('hidden');
+            welcomeVideo.addEventListener('error', () => {
+                welcomeVideo.classList.add('hidden');
+            });
+            welcomeVideo.play().catch(() => {
+                welcomeVideo.classList.add('hidden');
             });
         }
 
