@@ -135,6 +135,15 @@
             background: #FFFFFF;
         }
 
+        #admin-chat-content {
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.86)),
+                url("{% static 'feedback/wtf.png' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
         .chat-header {
             background: #FFFFFF;
             padding: 15px 25px;
@@ -248,6 +257,8 @@
             </div>
         </header>
 
+        <main class="neo-layout"></main>
+
         
             <section class="neo-card chat-shell">
                 <div class="chat-header">
@@ -287,7 +298,7 @@
                     <div class="flex gap-4">
                         {% csrf_token %}
                         <input type="hidden" id="admin-user-id" value="{{ user_id }}">
-                        <input type="text" id="admin-reply-input" class="chat-input-field" placeholder="Foydalanuvchiga javob yozing...">
+                        <input type="text" id="admin-reply-input" class="chat-input-field" placeholder="Yozing...">
                         <button id="admin-send-btn" class="send-btn">Javob yuborish</button>
                     </div>
                 </div>
@@ -341,9 +352,6 @@
             welcomeVideo.play().catch(() => {
                 welcomeVideo.classList.add('hidden');
             });
-            welcomeVideo.play().catch(() => {
-                welcomeVideo.classList.add('hidden');
-            });
         }
 
         enterButton.addEventListener('click', () => {
@@ -360,8 +368,7 @@
 
             document.querySelectorAll('.admin-ticket-item').forEach((btn) => {
                 const isActive = activeTicketId && btn.dataset.ticketId === activeTicketId;
-                btn.classList.toggle('ring-2', isActive);
-                btn.classList.toggle('ring-[#120AFF]', isActive);
+                btn.classList.toggle('bg-[#EAF4FF]', isActive);
             });
         }
 
