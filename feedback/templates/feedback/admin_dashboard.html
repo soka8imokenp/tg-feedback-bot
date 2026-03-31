@@ -10,12 +10,12 @@
     <title>Retro Admin Dashboard</title>
     <style>
         :root {
-            /* Новая теплая палитра в стиле Neo-Brutalism */
-            --bg-main: #F5EFE6;      /* Кремовый фон */
-            --accent-blue: #7FB5FF;  /* Голубой для кнопки */
-            --accent-mint: #A3D2CA;  /* Мятный для акцентов */
-            --accent-peach: #FFC4C4; /* Персиковый */
-            --dark: #1A1A1B;         /* Почти черный для границ */
+            /* Новая небесная палитра */
+            --bg-main: #E8F1F8;       /* Очень светлый облачно-голубой фон */
+            --accent-blue: #82B3FB;   /* Голубой цвет кнопки Ganbatte */
+            --accent-light: #FFFFFF;  /* Чистый белый */
+            --accent-dark-blue: #4A90E2; /* Насыщенный синий для акцентов */
+            --dark: #000000;          /* Глубокий черный для границ */
         }
 
         body {
@@ -36,26 +36,25 @@
             flex-direction: column;
         }
 
-        /* Кнопка Ganbatte по твоему запросу */
+        /* Кнопка Ganbatte */
         .cta-btn {
             width: 100%;
             background: var(--accent-blue);
             border: 3px solid var(--dark);
-            border-radius: 12px; /* Менее закругленные для стиля */
+            border-radius: 12px;
             color: #FFFFFF;
             padding: 20px;
-            font-size: 16px;
+            font-size: 20px;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: .1em;
-            /* Жесткая тень Neo-Brutalism */
             box-shadow: 6px 6px 0px var(--dark);
             transition: all .1s ease;
             cursor: pointer;
         }
 
         .cta-btn:active {
-            transform: translate(3px, 3px);
+            transform: translate(4px, 4px);
             box-shadow: 2px 2px 0px var(--dark);
         }
 
@@ -66,30 +65,48 @@
             display: grid;
             grid-template-rows: auto 1fr;
             gap: 20px;
+            min-height: calc(100vh - 40px);
         }
 
         /* Верхняя панель */
         .neo-topbar {
-            background: var(--accent-mint);
+            background: var(--accent-light);
             border: 3px solid var(--dark);
             border-radius: 12px;
             box-shadow: 8px 8px 0px var(--dark);
             padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Декоративная полоса сверху админ-панели */
+        .neo-topbar::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: var(--accent-blue);
+            border-bottom: 3px solid var(--dark);
         }
 
         /* Карточки и контейнеры */
         .neo-card {
-            background: #FFFFFF;
+            background: var(--accent-light);
             border: 3px solid var(--dark);
             border-radius: 12px;
             box-shadow: 8px 8px 0px var(--dark);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .neo-layout {
             display: grid;
             grid-template-columns: 380px 1fr;
             gap: 24px;
+            min-height: 0;
         }
 
         /* Список тикетов */
@@ -98,48 +115,83 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
-            max-height: 70vh;
             overflow-y: auto;
+            flex-grow: 1;
         }
 
         .neo-ticket {
             border: 3px solid var(--dark);
             border-radius: 10px;
-            background: #FFF;
+            background: var(--bg-main);
             padding: 15px;
             box-shadow: 4px 4px 0px var(--dark);
             transition: all 0.1s ease;
             cursor: pointer;
             text-align: left;
+            display: block;
+            width: 100%;
         }
 
         .neo-ticket:hover {
             transform: translate(-2px, -2px);
-            box-shadow: 7px 7px 0px var(--dark);
-            background: var(--accent-peach);
+            box-shadow: 6px 6px 0px var(--dark);
+            background: var(--accent-blue);
+            color: var(--accent-light);
+        }
+
+        .neo-ticket:hover p,
+        .neo-ticket:hover span,
+        .neo-ticket:hover h3 {
+            color: var(--accent-light) !important;
         }
 
         /* Чат (в стиле ретро-окна) */
         .chat-shell {
-            background: #FFF8E7; /* Теплый фон чата */
             position: relative;
-            display: flex;
-            flex-direction: column;
+            background-image: url('{% static "feedback/4.png" %}');
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Полупрозрачный слой для приглушения фона */
+        .chat-shell::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.85); /* 85% белого, чтобы текст читался идеально */
+            z-index: 0;
         }
 
         .chat-header {
-            background: var(--dark);
-            color: white;
-            padding: 10px 15px;
-            font-size: 12px;
+            background: var(--accent-blue);
+            color: var(--dark);
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 900;
+            border-bottom: 3px solid var(--dark);
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            position: relative; /* Чтобы вышло поверх приглушающего слоя */
+            z-index: 1;
+        }
+
+        #admin-chat-content {
+            position: relative; /* Чтобы вышло поверх приглушающего слоя */
+            z-index: 1;
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         /* Адаптив */
         @media (max-width: 1024px) {
             .neo-layout { grid-template-columns: 1fr; }
             body { padding: 10px; }
+            .neo-shell { min-height: auto; }
         }
 
         .hidden { display: none !important; }
@@ -148,11 +200,11 @@
 <body>
 
     <section id="admin-welcome" class="welcome-layer">
-        <div class="relative w-full h-full overflow-hidden flex flex-col">
-            <video id="admin-welcome-video" class="absolute inset-0 w-full h-full object-cover opacity-80" autoplay muted playsinline></video>
-            <div id="video-loading" class="absolute inset-0 flex items-center justify-center font-bold uppercase">Yuklanmoqda...</div>
+        <div class="relative w-full h-full overflow-hidden flex flex-col justify-end bg-gradient-to-t from-[#B0D4FA] to-transparent z-10">
+            <video id="admin-welcome-video" class="absolute inset-0 w-full h-full object-cover opacity-90 -z-10" autoplay muted playsinline></video>
+            <div id="video-loading" class="absolute inset-0 flex items-center justify-center font-bold uppercase text-dark">Yuklanmoqda...</div>
             
-            <div class="mt-auto p-6 z-10">
+            <div class="p-8 z-20 pb-12 mx-auto w-full max-w-lg">
                 <button id="ganbatte-btn" class="cta-btn" type="button">Ganbatte</button>
             </div>
         </div>
@@ -160,22 +212,26 @@
 
     <div id="admin-panel" class="neo-shell hidden">
         <header class="neo-topbar">
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center mt-3">
                 <div>
-                    <p class="text-[10px] uppercase font-black tracking-widest text-dark/60">System Protocol v1.0</p>
-                    <h1 class="text-2xl font-black mt-1 uppercase">Admin: {{ staff_user.username }}</h1>
+                    <p class="text-[12px] uppercase font-black tracking-widest text-[#4A90E2]">Terminal Protocol v2.0</p>
+                    <h1 class="text-3xl font-black mt-1 uppercase text-dark tracking-wide">Admin: {{ staff_user.username }}</h1>
                 </div>
-                <div class="flex gap-3">
-                    <span class="border-2 border-dark bg-white px-3 py-1 text-xs font-bold shadow-[3px_3px_0px_#000]">Total: {{ tickets|length }}</span>
-                    <span class="border-2 border-dark bg-red-400 text-white px-3 py-1 text-xs font-bold shadow-[3px_3px_0px_#000]">LIVE</span>
+                <div class="flex gap-4">
+                    <span class="border-[3px] border-dark bg-[#E8F1F8] px-4 py-2 text-sm font-black shadow-[4px_4px_0px_#000]">Total: {{ tickets|length }}</span>
+                    <span class="border-[3px] border-dark bg-[#FF5757] text-white px-4 py-2 text-sm font-black shadow-[4px_4px_0px_#000] animate-pulse">LIVE</span>
                 </div>
             </div>
         </header>
 
         <main class="neo-layout">
             <aside class="neo-card flex flex-col">
-                <div class="p-4 border-b-3 border-dark bg-accent-peach font-black text-sm uppercase">
-                    Входящие сообщения
+                <div class="p-5 border-b-[3px] border-dark bg-white flex justify-between items-center">
+                    <span class="font-black text-sm uppercase tracking-wide">Входящие сообщения</span>
+                    <div class="flex gap-2">
+                        <div class="w-4 h-4 rounded-full border-[3px] border-dark bg-[#82B3FB]"></div>
+                        <div class="w-4 h-4 rounded-full border-[3px] border-dark bg-[#FFFFFF]"></div>
+                    </div>
                 </div>
                 <div class="tickets-list">
                     {% for ticket in tickets %}
@@ -184,39 +240,39 @@
                         hx-target="#admin-chat-content" 
                         hx-swap="innerHTML"
                         class="neo-ticket">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-[10px] font-black bg-dark text-white px-2 py-0.5">#{{ ticket.id }}</span>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-[11px] font-black bg-dark text-white px-2 py-1 rounded-sm shadow-[2px_2px_0px_#82B3FB]">#{{ ticket.id }}</span>
                             <div class="flex gap-1">
                                 {% if ticket.is_closed %}
-                                    <div class="w-3 h-3 bg-gray-400 border border-dark rounded-full"></div>
+                                    <div class="w-3.5 h-3.5 bg-gray-400 border-2 border-dark rounded-full"></div>
                                 {% else %}
-                                    <div class="w-3 h-3 bg-green-400 border border-dark rounded-full animate-pulse"></div>
+                                    <div class="w-3.5 h-3.5 bg-[#5EEA7E] border-2 border-dark rounded-full animate-pulse shadow-[2px_2px_0px_#000]"></div>
                                 {% endif %}
                             </div>
                         </div>
-                        <h3 class="font-black text-sm leading-tight mb-1">{{ ticket.subject|truncatechars:40 }}</h3>
-                        <p class="text-[10px] font-bold text-dark/50">FROM: @{{ ticket.username }}</p>
+                        <h3 class="font-black text-[15px] leading-tight mb-2 text-dark">{{ ticket.subject|truncatechars:40 }}</h3>
+                        <p class="text-[11px] font-bold text-dark/60 uppercase">FROM: @{{ ticket.username }}</p>
                     </button>
                     {% empty %}
-                    <p class="text-center py-10 font-bold opacity-30">No tickets found...</p>
+                    <p class="text-center py-10 font-black opacity-30 uppercase tracking-widest text-dark">No tickets found...</p>
                     {% endfor %}
                 </div>
             </aside>
 
             <section class="neo-card chat-shell">
                 <div class="chat-header">
-                    <span>TERMINAL_OUTPUT.EXE</span>
+                    <span class="tracking-widest">TERMINAL_OUTPUT.EXE</span>
                     <div class="flex gap-2">
-                        <div class="w-3 h-3 border border-white"></div>
-                        <div class="w-3 h-3 border border-white bg-white"></div>
+                        <div class="w-4 h-4 border-[3px] border-dark bg-white hover:bg-dark cursor-pointer transition-colors"></div>
+                        <div class="w-4 h-4 border-[3px] border-dark bg-[#FF5757] hover:bg-dark cursor-pointer transition-colors"></div>
                     </div>
                 </div>
-                <div id="admin-chat-content" class="p-6 overflow-y-auto h-full">
+                <div id="admin-chat-content">
                     {% if selected_ticket %}
                         {% include 'feedback/partials/admin_ticket_chat.html' %}
                     {% else %}
-                        <div class="flex flex-col items-center justify-center h-full text-dark/20">
-                            <h2 class="text-4xl font-black">SELECT A TICKET</h2>
+                        <div class="flex flex-col items-center justify-center h-full text-dark">
+                            <h2 class="text-4xl font-black bg-white px-6 py-4 border-[3px] border-dark shadow-[6px_6px_0px_#82B3FB] uppercase tracking-widest">Select a ticket</h2>
                         </div>
                     {% endif %}
                 </div>
@@ -231,7 +287,7 @@
         const welcomeVideo = document.getElementById('admin-welcome-video');
         const videoLoading = document.getElementById('video-loading');
 
-        // Укажи путь к видео
+        // Путь к видео
         const videoSrc = "{% static 'feedback/hello_admin_2.mp4' %}";
 
         if (welcomeVideo) {
