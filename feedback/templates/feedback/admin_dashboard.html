@@ -10,12 +10,11 @@
     <title>Retro Admin Dashboard</title>
     <style>
         :root {
-            /* Новая небесная палитра */
-            --bg-main: #E8F1F8;       /* Очень светлый облачно-голубой фон */
-            --accent-blue: #82B3FB;   /* Голубой цвет кнопки Ganbatte */
-            --accent-light: #FFFFFF;  /* Чистый белый */
-            --accent-dark-blue: #4A90E2; /* Насыщенный синий для акцентов */
-            --dark: #000000;          /* Глубокий черный для границ */
+            var(--bg-main): #E8F1F8;       
+            --accent-blue: #82B3FB;   
+            --accent-light: #FFFFFF;  
+            --accent-dark-blue: #4A90E2; 
+            --dark: #000000;          
         }
 
         body {
@@ -26,7 +25,6 @@
             padding: 20px;
         }
 
-        /* Экраны перехода */
         .welcome-layer {
             position: fixed;
             inset: 0;
@@ -36,7 +34,6 @@
             flex-direction: column;
         }
 
-        /* Кнопка Ganbatte */
         .cta-btn {
             width: 100%;
             background: var(--accent-blue);
@@ -51,6 +48,7 @@
             box-shadow: 6px 6px 0px var(--dark);
             transition: all .1s ease;
             cursor: pointer;
+            pointer-events: auto; /* Включаем клики для кнопки */
         }
 
         .cta-btn:active {
@@ -58,7 +56,41 @@
             box-shadow: 2px 2px 0px var(--dark);
         }
 
-        /* Основная сетка */
+        /* --- НОВЫЕ СТИЛИ ДЛЯ ТЕКСТА ПОВЕРХ ВИДЕО --- */
+        .kawaii-title {
+            color: var(--accent-blue);
+            font-size: 5rem; /* Огромный шрифт */
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            text-shadow: 5px 5px 0px var(--dark); /* Брутальная тень */
+            line-height: 1;
+            /* Анимация "выпрыгивания" */
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .support-subtitle {
+            color: #6B7280; /* Серый цвет (Tailwind gray-500) */
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4em;
+            margin-top: 15px;
+            opacity: 0;
+            /* Появляется чуть позже заголовка */
+            animation: fadeIn 0.5s ease forwards 0.3s; 
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        /* ------------------------------------------- */
+
         .neo-shell {
             max-width: 1300px;
             margin: 0 auto;
@@ -68,7 +100,6 @@
             min-height: calc(100vh - 40px);
         }
 
-        /* Верхняя панель */
         .neo-topbar {
             background: var(--accent-light);
             border: 3px solid var(--dark);
@@ -79,7 +110,6 @@
             overflow: hidden;
         }
 
-        /* Декоративная полоса сверху админ-панели */
         .neo-topbar::before {
             content: "";
             position: absolute;
@@ -91,7 +121,6 @@
             border-bottom: 3px solid var(--dark);
         }
 
-        /* Карточки и контейнеры */
         .neo-card {
             background: var(--accent-light);
             border: 3px solid var(--dark);
@@ -109,7 +138,6 @@
             min-height: 0;
         }
 
-        /* Список тикетов */
         .tickets-list {
             padding: 15px;
             display: flex;
@@ -145,7 +173,6 @@
             color: var(--accent-light) !important;
         }
 
-        /* Чат (в стиле ретро-окна) */
         .chat-shell {
             position: relative;
             background-image: url('{% static "feedback/4.png" %}');
@@ -153,12 +180,11 @@
             background-position: center;
         }
 
-        /* Полупрозрачный слой для приглушения фона */
         .chat-shell::before {
             content: "";
             position: absolute;
             inset: 0;
-            background: rgba(255, 255, 255, 0.85); /* 85% белого, чтобы текст читался идеально */
+            background: rgba(255, 255, 255, 0.85); 
             z-index: 0;
         }
 
@@ -172,12 +198,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: relative; /* Чтобы вышло поверх приглушающего слоя */
+            position: relative; 
             z-index: 1;
         }
 
         #admin-chat-content {
-            position: relative; /* Чтобы вышло поверх приглушающего слоя */
+            position: relative; 
             z-index: 1;
             flex-grow: 1;
             padding: 20px;
@@ -187,11 +213,11 @@
             gap: 10px;
         }
 
-        /* Адаптив */
         @media (max-width: 1024px) {
             .neo-layout { grid-template-columns: 1fr; }
             body { padding: 10px; }
             .neo-shell { min-height: auto; }
+            .kawaii-title { font-size: 3.5rem; } /* Уменьшаем шрифт на мобилках */
         }
 
         .hidden { display: none !important; }
@@ -204,7 +230,12 @@
             <video id="admin-welcome-video" class="absolute inset-0 w-full h-full object-cover opacity-90 -z-10" autoplay muted playsinline></video>
             <div id="video-loading" class="absolute inset-0 flex items-center justify-center font-bold uppercase text-dark">Yuklanmoqda...</div>
             
-            <div class="p-8 z-20 pb-12 mx-auto w-full max-w-lg">
+            <div id="video-overlay-text" class="absolute inset-0 z-[15] flex flex-col items-center justify-center hidden pointer-events-none bg-white/20 backdrop-blur-sm">
+                <h2 class="kawaii-title">Kawaii</h2>
+                <p class="support-subtitle">support service</p>
+            </div>
+            
+            <div class="p-8 z-20 pb-12 mx-auto w-full max-w-lg relative">
                 <button id="ganbatte-btn" class="cta-btn" type="button">Ganbatte</button>
             </div>
         </div>
@@ -286,13 +317,23 @@
         const enterButton = document.getElementById('ganbatte-btn');
         const welcomeVideo = document.getElementById('admin-welcome-video');
         const videoLoading = document.getElementById('video-loading');
+        const videoOverlayText = document.getElementById('video-overlay-text'); // Находим наш текст
 
         // Путь к видео
         const videoSrc = "{% static 'feedback/hello_admin_2.mp4' %}";
 
         if (welcomeVideo) {
             welcomeVideo.src = videoSrc;
-            welcomeVideo.onplaying = () => videoLoading.classList.add('hidden');
+            
+            // Прячем лоадер, когда видео начинает играть
+            welcomeVideo.onplaying = () => {
+                if (videoLoading) videoLoading.classList.add('hidden');
+            };
+
+            // НОВАЯ ЛОГИКА: Показываем текст, когда видео заканчивается
+            welcomeVideo.addEventListener('ended', () => {
+                videoOverlayText.classList.remove('hidden');
+            });
         }
 
         enterButton.addEventListener('click', () => {
