@@ -1,45 +1,24 @@
 {% if selected_ticket %}
-<div class="h-full flex flex-col">
-    <div class="pb-3 border-b border-white/10 mb-3">
-        <p class="text-xs text-white/60">Ticket #{{ selected_ticket.id }} · @{{ selected_ticket.username }}</p>
-        <h2 class="text-lg font-bold">{{ selected_ticket.subject }}</h2>
+<div class="h-full flex flex-col" data-selected-ticket-id="{{ selected_ticket.id }}" data-ticket-closed="{{ selected_ticket.is_closed|yesno:'true,false' }}">
+    <div class="pb-3 border-b border-black/10 mb-3">
+        <p class="text-xs text-black/60">Ticket #{{ selected_ticket.id }} · @{{ selected_ticket.username }}</p>
+        <h2 class="text-lg font-bold text-black">{{ selected_ticket.subject }}</h2>    
     </div>
 
-    <div class="flex-1 space-y-2 overflow-y-auto pr-1 mb-4 max-h-[48vh]">
+    <div id="ticket-messages-scroll" class="flex-1 space-y-3 overflow-y-auto pr-1 mb-1">
         {% for msg in messages %}
             <div class="flex {% if msg.is_from_admin %}justify-end{% else %}justify-start{% endif %}">
-                <div class="max-w-[80%] px-3 py-2 rounded-xl text-sm {% if msg.is_from_admin %}bg-[#ad88b9] text-white{% else %}bg-white/10 text-white{% endif %}">
+                <div class="max-w-[88%] px-3 py-2 rounded-xl text-sm border {% if msg.is_from_admin %}bg-[#82B3FB] text-white border-black{% else %}bg-white text-black border-black/20{% endif %}">
                     <p class="whitespace-pre-wrap break-words">{{ msg.text }}</p>
-                    <p class="text-[10px] mt-1 {% if msg.is_from_admin %}text-white/80{% else %}text-white/50{% endif %}">{{ msg.time }}</p>
+                    <p class="text-[10px] mt-1 {% if msg.is_from_admin %}text-white/80{% else %}text-black/40{% endif %}">{{ msg.time }}</p>
                 </div>
             </div>
         {% empty %}
-            <p class="text-sm text-white/50">Xabarlar hali yo'q.</p>
+            <p class="text-sm text-black/40">Xabarlar hali yo'q.</p>
         {% endfor %}
     </div>
-
-    {% if not selected_ticket.is_closed %}
-    <form
-        hx-post="{% url 'feedback:admin_reply_ticket' selected_ticket.id %}"
-        hx-target="#admin-chat-content"
-        hx-swap="innerHTML"
-        class="space-y-2">
-        {% csrf_token %}
-        <input type="hidden" name="user_id" value="{{ user_id }}">
-        <textarea
-            name="reply_text"
-            rows="3"
-            required
-            placeholder="Foydalanuvchiga javob yozing..."
-            class="w-full p-3 rounded-xl bg-white/10 border border-white/20 text-white text-sm focus:outline-none"></textarea>
-        <button class="px-4 py-2 rounded-xl bg-[#ad88b9] text-white font-semibold text-sm">Javob yuborish</button>
-    </form>
     {% else %}
-    <div class="text-sm text-gray-400">Ticket yopilgan, javob yuborib bo'lmaydi.</div>
-    {% endif %}
-</div>
-{% else %}
-<div class="h-full flex items-center justify-center text-white/50">
+<div class="h-full flex items-center justify-center text-black/40" data-selected-ticket-id="">
     Ticket tanlang.
 </div>
 {% endif %}
