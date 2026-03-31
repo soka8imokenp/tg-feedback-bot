@@ -44,12 +44,28 @@
         }
 
         .cta-label {
-            font-size: clamp(1.05rem, 4.7vw, 1.25rem);
+            font-size: clamp(1.15rem, 5.2vw, 1.45rem);
             letter-spacing: 0.24em;
+            color: #0369a1;
             text-shadow:
-                0 1px 0 #ffffff,
-                0 -1px 0 rgba(14, 165, 233, 0.55),
-                0 2px 0 rgba(14, 165, 233, 0.28);
+                0 1px 0 #e0f2fe,
+                0 -1px 0 rgba(2, 132, 199, 0.75),
+                0 3px 0 rgba(2, 132, 199, 0.35);
+        }
+
+        .video-loading {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0c0a14;
+            color: #ad88b9;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
         }
 
         @keyframes ctaPulse {
@@ -64,7 +80,6 @@
             <video
                 id="admin-welcome-video"
                 class="absolute inset-0 w-full h-full object-cover"
-                poster="{% static 'feedback/hello_admin.png' %}"
                 autoplay
                 muted
                 playsinline
@@ -72,6 +87,7 @@
             >
                 Ваш браузер не поддерживает видео.
             </video>
+            <div id="video-loading" class="video-loading">Yuklanmoqda...</div>
             <div class="bottom-sheet">
                 <button
                     id="ganbatte-btn"
@@ -79,7 +95,7 @@
                     type="button"
                     style="background:#ffffff;border:3px solid #000;border-radius:20px;color:#38bdf8;padding:18px 16px;box-shadow:0 7px 0 #000,0 12px 22px rgba(56,189,248,.25);"
                 >
-                    <span class="cta-label">GANBATTE</span>
+                    <span class="cta-label">SALOM ADMIN</span>
                 </button>
             </div>
         </div>
@@ -133,6 +149,7 @@
         const adminPanel = document.getElementById('admin-panel');
         const enterButton = document.getElementById('ganbatte-btn');
         const welcomeVideo = document.getElementById('admin-welcome-video');
+        const videoLoading = document.getElementById('video-loading');
 
         const adminVideos = [
             "{% static 'feedback/hello_admin_1.mp4' %}",
@@ -154,10 +171,26 @@
             const playPromise = welcomeVideo.play();
             if (playPromise && typeof playPromise.catch === 'function') {
                 playPromise.catch(() => {
-                    // poster останется как fallback, если autoplay ограничен
+                    if (videoLoading) {
+                        videoLoading.textContent = "Video yuklanmadi";
+                    }
                 });
             }
         }
+
+        function hideVideoLoading() {
+            if (videoLoading) {
+                videoLoading.style.display = 'none';
+            }
+        }
+
+        welcomeVideo.addEventListener('playing', hideVideoLoading);
+        welcomeVideo.addEventListener('canplay', hideVideoLoading);
+        welcomeVideo.addEventListener('error', function () {
+            if (videoLoading) {
+                videoLoading.textContent = "Video yuklanmadi";
+            }
+        });
 
         enterButton.addEventListener('click', function () {
             welcomeScreen.classList.add('hidden');
