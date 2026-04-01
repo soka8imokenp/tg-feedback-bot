@@ -3,7 +3,7 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -13,10 +13,10 @@
 
         :root {
             --bg-main: #F4F9FF;       
-            --accent-blue: #82B3FB;   /* Голубой */
-            --ultramarine: #120AFF;   /* Синий */
+            --accent-blue: #82B3FB;   
+            --ultramarine: #120AFF;   
             --accent-light: #FFFFFF;  
-            --dark: #1A1A1B;          /* Мягкий черный */
+            --dark: #1A1A1B;          
         }
 
         body {
@@ -30,10 +30,28 @@
             margin: 0;
             padding: 12px;
             letter-spacing: -0.02em;
-            width: 100%;
+            width: 100vw;
             max-width: 100%;
-            overflow-x: hidden;
+            overflow-x: hidden; /* Защита от скролла вправо */
         }
+
+        /* --- ПРЕЛОАДЕР --- */
+        #preloader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-main); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader-spinner {
+            width: 45px; height: 45px;
+            border: 4px solid rgba(130, 179, 251, 0.1);
+            border-left-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* --- Слой приветствия --- */
         .welcome-layer {
@@ -44,6 +62,13 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+        }
+
+        /* Фоллбек при ошибке видео */
+        .video-fallback {
+            background-image: url("{% static 'feedback/admin_wall.png' %}") !important;
+            background-size: cover;
+            background-position: center;
         }
 
         .cta-btn {
@@ -75,6 +100,7 @@
             grid-template-rows: auto 1fr;
             gap: 12px;
             min-height: calc(100vh - 24px);
+            overflow-x: hidden;
         }
 
         .neo-topbar {
@@ -82,7 +108,7 @@
             border: 2px solid var(--dark);
             border-radius: 24px; 
             box-shadow: 6px 6px 0px rgba(0,0,0,0.05);
-            padding: 25px;
+            padding: 20px; /* Уменьшил паддинг для мобилок */
         }
 
         .neo-card {
@@ -93,6 +119,7 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            max-width: 100%;
         }
 
         .neo-layout {
@@ -100,14 +127,14 @@
             grid-template-columns: 2fr 1fr;
             gap: 12px;
             min-height: 0;
+            max-width: 100%;
         }
 
-        /* --- Список тикетов --- */
         .tickets-list {
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 15px;
             overflow-y: auto;
             max-height: 70vh;
         }
@@ -116,14 +143,14 @@
             border: 2px solid var(--dark);
             border-radius: 20px;
             background: #FFFFFF;
-            padding: 20px;
+            padding: 15px;
             transition: all 0.2s ease;
             cursor: pointer;
             text-align: left;
-            outline: none; /* Убираем системную синюю обводку браузера при клике */
+            outline: none;
+            width: 100%;
         }
 
-        /* Стили для наведения и для выбранного (активного) тикета */
         .neo-ticket:hover,
         .neo-ticket.active-ticket {
             border-color: var(--accent-blue);
@@ -131,24 +158,19 @@
             box-shadow: 0px 10px 20px rgba(130, 179, 251, 0.2);
         }
 
-        /* --- Чат и Терминал --- */
-        .chat-shell {
-            position: relative;
-            background: #FFFFFF;
-        }
+        .chat-shell { position: relative; background: #FFFFFF; min-width: 0; }
 
         .chat-header {
             background: #FFFFFF;
-            padding: 15px 25px;
+            padding: 12px 20px;
             border-bottom: 2px solid var(--dark);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        /* Поле ввода */
         .chat-input-area {
-            padding: 20px;
+            padding: 15px;
             border-top: 2px solid var(--dark);
             background: white;
             margin-top: auto;
@@ -158,58 +180,57 @@
             width: 100%;
             border: 2px solid var(--dark);
             border-radius: 15px;
-            padding: 15px;
+            padding: 12px;
             font-weight: 600;
             color: var(--dark); 
             outline: none;
+            font-size: 14px;
         }
 
-        .chat-input-field::placeholder {
-            color: var(--dark);
-            opacity: 0.5;
-        }
-
-        /* Кнопка отправки */
         .send-btn {
             background-color: var(--ultramarine) !important;
             color: white;
             font-weight: 900;
             text-transform: uppercase;
-            padding: 12px 25px;
+            padding: 10px 15px;
             border: 2px solid var(--dark);
             border-radius: 15px;
             box-shadow: 4px 4px 0px var(--dark);
             transition: all 0.1s;
-        }
-
-        .send-btn:active {
-            transform: translate(2px, 2px);
-            box-shadow: 0px 0px 0px var(--dark);
+            font-size: 12px;
+            white-space: nowrap;
         }
 
         .hidden { display: none !important; }
 
-        /* Скроллбар */
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: var(--accent-blue); border-radius: 10px; }
 
+        /* Адаптация под мобильные устройства */
         @media (max-width: 1024px) {
-            body { padding: 10px; }
-            .neo-layout {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-            .tickets-list { max-height: 40vh; }
+            body { padding: 8px; }
+            .neo-layout { grid-template-columns: 1fr; }
+            .neo-shell { gap: 8px; }
+            .neo-topbar { padding: 15px; }
+            .neo-topbar h1 { font-size: 1.25rem; }
+            .tickets-list { max-height: 45vh; }
+            .chat-input-area .flex { gap: 8px; }
+            .send-btn { padding: 10px; }
         }
     </style>
 </head>
 <body>
 
+    <div id="preloader">
+        <div class="loader-spinner"></div>
+        <p style="font-size: 8px; font-weight: bold; margin-top: 15px; text-transform: uppercase; letter-spacing: 2px; color: #82B3FB;">Yuklanmoqda...</p>
+    </div>
+
     <section id="admin-welcome" class="welcome-layer">
-        <div class="relative w-full h-full overflow-hidden flex flex-col justify-end bg-transparent">
+        <div id="welcome-container" class="relative w-full h-full overflow-hidden flex flex-col justify-end bg-transparent">
             <video id="admin-welcome-video" 
                    class="absolute inset-0 w-full h-full object-cover opacity-90 z-0" 
-                   autoplay muted playsinline 
+                   muted playsinline 
                    poster="{% static 'feedback/admin_wall.png' %}"></video>
             
             <div id="video-overlay-text" class="absolute inset-0 flex flex-col items-center justify-center z-10 bg-white/35 backdrop-blur-[1px]">
@@ -225,63 +246,59 @@
 
     <div id="admin-panel" class="neo-shell hidden">
         <header class="neo-topbar flex justify-between items-center">
-            <div>
-                <span class="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em]">System Active</span>
-                <h1 class="text-2xl font-black">Admin: {{ staff_user.username }}</h1>
+            <div class="min-w-0">
+                <span class="text-[9px] font-black text-blue-400 uppercase tracking-[0.3em]">Active</span>
+                <h1 class="text-xl font-black truncate">Admin: {{ staff_user.username }}</h1>
             </div>
-            <div class="flex gap-4">
-                <div class="px-6 py-2 border-2 border-dark rounded-full font-black text-sm">Tickets: {{ tickets|length }}</div>
-                <div class="px-6 py-2 bg-red-50 border-2 border-red-500 text-red-500 rounded-full font-black text-sm animate-pulse">LIVE FEED</div>
+            <div class="flex gap-2 sm:gap-4 shrink-0">
+                <div class="px-3 py-1.5 border-2 border-dark rounded-full font-black text-[10px] sm:text-sm">T: {{ tickets|length }}</div>
+                <div class="px-3 py-1.5 bg-red-50 border-2 border-red-500 text-red-500 rounded-full font-black text-[10px] sm:text-sm animate-pulse">LIVE</div>
             </div>
         </header>
 
         <main class="neo-layout">
             <section class="neo-card chat-shell">
                 <div class="chat-header">
-                    <span class="font-black text-[11px] tracking-widest text-gray-400">TERMINAL_MODE // SESSION_ACTIVE</span>
+                    <span class="font-black text-[10px] tracking-widest text-gray-400">TERMINAL // SESSION</span>
                     <div class="flex gap-2">
-                        <div class="w-3 h-3 rounded-full bg-yellow-400 border border-black"></div>
-                        <div class="w-3 h-3 rounded-full bg-red-400 border border-black"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-yellow-400 border border-black"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-red-400 border border-black"></div>
                     </div>
                 </div>
                 
-                <div id="admin-chat-content" class="flex-grow overflow-y-auto p-4 sm:p-10 flex flex-col gap-4">
-                    {% if selected_ticket %}
-                        {% else %}
+                <div id="admin-chat-content" class="flex-grow overflow-y-auto p-4 sm:p-10 flex flex-col gap-4 min-h-[300px]">
                     <div class="h-full flex flex-col items-center justify-center opacity-20 py-20">
-                        <h2 class="text-5xl font-black italic">Kawaii OS</h2>
+                        <h2 class="text-4xl font-black italic">Kawaii OS</h2>
                     </div>
-                    {% endif %}
                 </div>
 
                 <div class="chat-input-area">
-                    <div class="flex gap-4">
+                    <div class="flex gap-2 sm:gap-4">
                         {% csrf_token %}
                         <input type="hidden" id="admin-user-id" value="{{ user_id }}">
-                        <input type="text" id="admin-reply-input" class="chat-input-field" placeholder="Foydalanuvchiga javob yozing...">
-                        <button id="admin-send-btn" class="send-btn">Javob yuborish</button>
+                        <input type="text" id="admin-reply-input" class="chat-input-field" placeholder="Javob yozing...">
+                        <button id="admin-send-btn" class="send-btn">Yuborish</button>
                     </div>
                 </div>
             </section>
 
             <aside class="neo-card">
-                <div class="p-6 border-b-2 border-dark bg-white">
-                    <h2 class="font-black uppercase text-sm tracking-widest">Messages</h2>
+                <div class="p-4 border-b-2 border-dark bg-white">
+                    <h2 class="font-black uppercase text-[10px] tracking-widest">Murojaatlar</h2>
                 </div>
                 <div class="tickets-list">
                     {% for ticket in tickets %}
-                    <button
-                        data-ticket-id="{{ ticket.id }}"
+                    <button data-ticket-id="{{ ticket.id }}"
                         hx-get="{% url 'feedback:admin_ticket_chat' ticket.id %}?user_id={{ user_id }}"
                         hx-target="#admin-chat-content"
                         hx-swap="innerHTML"
                         class="neo-ticket admin-ticket-item">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-[10px] font-black opacity-30">#{{ ticket.id }}</span>
-                            <div class="w-2.5 h-2.5 bg-[#5EEA7E] rounded-full border border-black"></div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[8px] font-black opacity-30">#{{ ticket.id }}</span>
+                            <div class="w-2 h-2 bg-[#5EEA7E] rounded-full border border-black"></div>
                         </div>
-                        <h3 class="font-black text-sm">{{ ticket.subject|truncatechars:35 }}</h3>
-                        <p class="text-[10px] font-bold mt-2 text-blue-400">@{{ ticket.username }}</p>
+                        <h3 class="font-black text-xs truncate">{{ ticket.subject }}</h3>
+                        <p class="text-[9px] font-bold text-blue-400">@{{ ticket.username }}</p>
                     </button>
                     {% endfor %}
                 </div>
@@ -290,50 +307,66 @@
     </div>
 
     <script>
+        const preloader = document.getElementById('preloader');
         const welcomeScreen = document.getElementById('admin-welcome');
+        const welcomeContainer = document.getElementById('welcome-container');
         const adminPanel = document.getElementById('admin-panel');
         const enterButton = document.getElementById('ganbatte-btn');
         const welcomeVideo = document.getElementById('admin-welcome-video');
         const replyInput = document.getElementById('admin-reply-input');
         const sendButton = document.getElementById('admin-send-btn');
-        const userIdField = document.getElementById('admin-user-id');
-        const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]')?.value;
+        
+        const videoSrc = "{% static 'feedback/hello_admin_2.mp4' %}";
         const replyUrlTemplate = "{% url 'feedback:admin_reply_ticket' 999999 %}";
 
-        const videoSrc = "{% static 'feedback/hello_admin_2.mp4' %}";
-        let activeTicketId = "{{ selected_ticket.id|default:'' }}";
-        let activeTicketClosed = "{{ selected_ticket.is_closed|yesno:'true,false'|default:'false' }}" === 'true';
-
-        // Логика видео: просто запускаем (один раз)
-        if (welcomeVideo) {
-            welcomeVideo.src = videoSrc;
-            welcomeVideo.play().catch(() => console.log('Автоплей видео был заблокирован браузером.'));
+        // Функция скрытия лоадера
+        function hidePreloader() {
+            if (preloader) {
+                preloader.style.opacity = '0';
+                setTimeout(() => preloader.classList.add('hidden'), 500);
+            }
         }
 
-        // Вход в панель ТОЛЬКО по нажатию на кнопку
-        function showAdminPanel() {
+        // Логика видео и прелоадера
+        if (welcomeVideo) {
+            welcomeVideo.src = videoSrc;
+            
+            // Видео начало играть — убираем загрузку
+            welcomeVideo.onplaying = hidePreloader;
+
+            // Ошибка загрузки видео — убираем загрузку и ставим картинку
+            welcomeVideo.onerror = () => {
+                hidePreloader();
+                welcomeContainer.classList.add('video-fallback');
+                welcomeVideo.classList.add('hidden');
+            };
+
+            welcomeVideo.play().catch(() => {
+                // Если автоплей запрещен — скрываем, чтобы не висел вечно
+                hidePreloader();
+            });
+        }
+
+        // Вход
+        enterButton.addEventListener('click', () => {
             welcomeScreen.classList.add('hidden');
             adminPanel.classList.remove('hidden');
             syncActiveTicketFromChat();
             scrollChatToBottom();
-        }
-
-        enterButton.addEventListener('click', showAdminPanel);
+        });
 
         function syncActiveTicketFromChat() {
             const wrapper = document.querySelector('#admin-chat-content [data-selected-ticket-id]');
-            activeTicketId = wrapper?.dataset?.selectedTicketId || '';
-            activeTicketClosed = wrapper?.dataset?.ticketClosed === 'true';
+            const activeId = wrapper?.dataset?.selectedTicketId || '';
+            const isClosed = wrapper?.dataset?.ticketClosed === 'true';
             
             if (sendButton) {
-                sendButton.disabled = !activeTicketId || activeTicketClosed;
-                sendButton.classList.toggle('opacity-60', !activeTicketId || activeTicketClosed);
+                sendButton.disabled = !activeId || isClosed;
+                sendButton.classList.toggle('opacity-60', !activeId || isClosed);
             }
 
-            // Убрали все классы `ring`, теперь просто добавляем/убираем класс `active-ticket`
             document.querySelectorAll('.admin-ticket-item').forEach((btn) => {
-                const isActive = activeTicketId && btn.dataset.ticketId === activeTicketId;
-                btn.classList.toggle('active-ticket', isActive);
+                btn.classList.toggle('active-ticket', activeId && btn.dataset.ticketId === activeId);
             });
         }
 
@@ -344,14 +377,19 @@
 
         function sendAdminReply() {
             const message = (replyInput?.value || '').trim();
-            if (!activeTicketId || !message || activeTicketClosed) return;
-            const replyUrl = replyUrlTemplate.replace('999999', activeTicketId);
+            const wrapper = document.querySelector('#admin-chat-content [data-selected-ticket-id]');
+            const activeId = wrapper?.dataset?.selectedTicketId;
+            if (!activeId || !message) return;
+
+            const replyUrl = replyUrlTemplate.replace('999999', activeId);
+            const userId = document.getElementById('admin-user-id')?.value;
+            const csrf = document.querySelector('input[name=csrfmiddlewaretoken]')?.value;
 
             htmx.ajax('POST', replyUrl, {
                 target: '#admin-chat-content',
                 swap: 'innerHTML',
-                values: { user_id: userIdField?.value || '', reply_text: message },
-                headers: csrfToken ? { 'X-CSRFToken': csrfToken } : {},
+                values: { user_id: userId, reply_text: message },
+                headers: csrf ? { 'X-CSRFToken': csrf } : {},
             });
 
             replyInput.value = '';
@@ -359,21 +397,16 @@
         }
 
         sendButton?.addEventListener('click', sendAdminReply);
-        replyInput?.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendAdminReply();
-            }
+        replyInput?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAdminReply(); }
         });
 
-        // Обработка событий HTMX
-        document.body.addEventListener('htmx:afterSwap', (event) => {
-            if (event.target && event.target.id === 'admin-chat-content') {
+        document.body.addEventListener('htmx:afterSwap', (e) => {
+            if (e.target.id === 'admin-chat-content') {
                 syncActiveTicketFromChat();
                 scrollChatToBottom();
             }
         });
-
     </script>
 </body>
 </html>
