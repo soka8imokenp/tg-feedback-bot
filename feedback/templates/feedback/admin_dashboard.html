@@ -13,10 +13,10 @@
 
         :root {
             --bg-main: #F4F9FF;       
-            --accent-blue: #82B3FB;   /* Тот самый голубой */
-            --ultramarine: #120AFF;   /* Синий Ультрамарин */
+            --accent-blue: #82B3FB;   /* Голубой */
+            --ultramarine: #120AFF;   /* Синий */
             --accent-light: #FFFFFF;  
-            --dark: #1A1A1B;          /* Чуть мягче чем чистый черный */
+            --dark: #1A1A1B;          /* Мягкий черный */
         }
 
         body {
@@ -40,7 +40,7 @@
             position: fixed;
             inset: 0;
             z-index: 100;
-            background: var(--bg-main);
+            background: #e2eaf3;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -50,7 +50,7 @@
             width: 100%;
             background: var(--accent-blue);
             border: 2px solid var(--dark);
-            border-radius: 20px; /* Мягкое скругление */
+            border-radius: 20px; 
             color: #FFFFFF;
             padding: 22px;
             font-size: 20px;
@@ -80,7 +80,7 @@
         .neo-topbar {
             background: var(--accent-light);
             border: 2px solid var(--dark);
-            border-radius: 24px; /* Очень мягкие углы */
+            border-radius: 24px; 
             box-shadow: 6px 6px 0px rgba(0,0,0,0.05);
             padding: 25px;
         }
@@ -97,8 +97,7 @@
 
         .neo-layout {
             display: grid;
-            grid-template-columns: minmax(0, 1fr);
-            grid-template-rows: minmax(320px, 1fr) minmax(200px, auto);
+            grid-template-columns: 2fr 1fr;
             gap: 12px;
             min-height: 0;
         }
@@ -110,7 +109,7 @@
             flex-direction: column;
             gap: 18px;
             overflow-y: auto;
-            max-height: 36vh;
+            max-height: 70vh;
         }
 
         .neo-ticket {
@@ -121,9 +120,12 @@
             transition: all 0.2s ease;
             cursor: pointer;
             text-align: left;
+            outline: none; /* Убираем системную синюю обводку браузера при клике */
         }
 
-        .neo-ticket:hover {
+        /* Стили для наведения и для выбранного (активного) тикета */
+        .neo-ticket:hover,
+        .neo-ticket.active-ticket {
             border-color: var(--accent-blue);
             transform: translateY(-3px);
             box-shadow: 0px 10px 20px rgba(130, 179, 251, 0.2);
@@ -144,22 +146,12 @@
             align-items: center;
         }
 
-        /* Стили сообщений в чате */
-        .admin-msg-bubble {
-            background-color: var(--accent-blue) !important; /* Голубой для админа */
-            color: white !important;
-            border-radius: 18px 18px 4px 18px;
-            border: 2px solid var(--dark);
-            padding: 12px 18px;
-            align-self: flex-end;
-            box-shadow: 3px 3px 0px var(--dark);
-        }
-
-        /* Поле ввода и текст печати */
+        /* Поле ввода */
         .chat-input-area {
             padding: 20px;
             border-top: 2px solid var(--dark);
             background: white;
+            margin-top: auto;
         }
 
         .chat-input-field {
@@ -168,11 +160,16 @@
             border-radius: 15px;
             padding: 15px;
             font-weight: 600;
-            color: var(--accent-blue) !important; /* Цвет печатаемого текста — голубой */
+            color: var(--dark); 
             outline: none;
         }
 
-        /* Кнопка отправки Ультрамарин */
+        .chat-input-field::placeholder {
+            color: var(--dark);
+            opacity: 0.5;
+        }
+
+        /* Кнопка отправки */
         .send-btn {
             background-color: var(--ultramarine) !important;
             color: white;
@@ -192,44 +189,34 @@
 
         .hidden { display: none !important; }
 
-        /* Красивый скроллбар */
+        /* Скроллбар */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-thumb { background: var(--accent-blue); border-radius: 10px; }
 
         @media (max-width: 1024px) {
             body { padding: 10px; }
-            .neo-shell { min-height: calc(100vh - 20px); }
             .neo-layout {
                 grid-template-columns: 1fr;
-                grid-template-rows: minmax(320px, 1fr) minmax(220px, auto);
+                gap: 12px;
             }
-            .neo-topbar {
-                padding: 16px;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            .tickets-list { max-height: 35vh; }
-            #admin-chat-content { padding: 16px !important; }
-        }
-
-        @media (max-width: 640px) {
-            .chat-header { padding: 12px; }
-            .chat-input-area { padding: 12px; }
-            .chat-input-area .flex { gap: 8px; }
-            .send-btn { padding: 10px 14px; font-size: 10px; }
-            .cta-btn { padding: 16px; font-size: 16px; }
+            .tickets-list { max-height: 40vh; }
         }
     </style>
 </head>
 <body>
 
     <section id="admin-welcome" class="welcome-layer">
-        <div class="relative w-full h-full overflow-hidden flex flex-col justify-end bg-white">
-            <video id="admin-welcome-video" class="absolute inset-0 w-full h-full object-cover opacity-90 z-0" autoplay muted playsinline loop preload="auto"></video>
+        <div class="relative w-full h-full overflow-hidden flex flex-col justify-end bg-transparent">
+            <video id="admin-welcome-video" 
+                   class="absolute inset-0 w-full h-full object-cover opacity-90 z-0" 
+                   autoplay muted playsinline 
+                   poster="{% static 'feedback/admin_wall.png' %}"></video>
+            
             <div id="video-overlay-text" class="absolute inset-0 flex flex-col items-center justify-center z-10 bg-white/35 backdrop-blur-[1px]">
                 <h2 class="text-5xl sm:text-7xl font-black uppercase text-[#82B3FB] drop-shadow-md text-center px-3">Kawaii</h2>
                 <p class="tracking-[0.35em] sm:tracking-[0.5em] font-bold text-gray-500 mt-4 text-xs sm:text-sm text-center px-3">SUPPORT SERVICE</p>
             </div>
+            
             <div class="p-6 sm:p-10 z-20 pb-10 sm:pb-16 mx-auto w-full max-w-md">
                 <button id="ganbatte-btn" class="cta-btn">Ganbatte</button>
             </div>
@@ -248,7 +235,7 @@
             </div>
         </header>
 
-        
+        <main class="neo-layout">
             <section class="neo-card chat-shell">
                 <div class="chat-header">
                     <span class="font-black text-[11px] tracking-widest text-gray-400">TERMINAL_MODE // SESSION_ACTIVE</span>
@@ -258,26 +245,10 @@
                     </div>
                 </div>
                 
-                <div id="admin-chat-content" class="flex-grow overflow-y-auto p-10 flex flex-col gap-4">
+                <div id="admin-chat-content" class="flex-grow overflow-y-auto p-4 sm:p-10 flex flex-col gap-4">
                     {% if selected_ticket %}
-                    <div class="h-full flex flex-col" data-selected-ticket-id="{{ selected_ticket.id }}" data-ticket-closed="{{ selected_ticket.is_closed|yesno:'true,false' }}">
-                        <div class="pb-3 border-b border-black/10 mb-3">
-                            <p class="text-xs text-black/60">Ticket #{{ selected_ticket.id }} · @{{ selected_ticket.username }}</p>
-                            <h2 class="text-lg font-bold text-black">{{ selected_ticket.subject }}</h2>
-                        </div>
-                        <div id="ticket-messages-scroll" class="flex-1 space-y-3 overflow-y-auto pr-1 mb-1">
-                            {% for msg in messages %}
-                            <div class="flex {% if msg.is_from_admin %}justify-end{% else %}justify-start{% endif %}">
-                                <div class="max-w-[88%] px-3 py-2 rounded-xl text-sm border {% if msg.is_from_admin %}bg-[#82B3FB] text-white border-black{% else %}bg-white text-black border-black/20{% endif %}">
-                                    <p class="whitespace-pre-wrap break-words">{{ msg.text }}</p>
-                                    <p class="text-[10px] mt-1 {% if msg.is_from_admin %}text-white/80{% else %}text-black/40{% endif %}">{{ msg.time }}</p>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% else %}
-                    <div class="h-full flex flex-col items-center justify-center opacity-20">
+                        {% else %}
+                    <div class="h-full flex flex-col items-center justify-center opacity-20 py-20">
                         <h2 class="text-5xl font-black italic">Kawaii OS</h2>
                     </div>
                     {% endif %}
@@ -333,35 +304,36 @@
         let activeTicketId = "{{ selected_ticket.id|default:'' }}";
         let activeTicketClosed = "{{ selected_ticket.is_closed|yesno:'true,false'|default:'false' }}" === 'true';
 
+        // Логика видео: просто запускаем (один раз)
         if (welcomeVideo) {
             welcomeVideo.src = videoSrc;
-            welcomeVideo.addEventListener('error', () => {
-                welcomeVideo.classList.add('hidden');
-            });
-            welcomeVideo.play().catch(() => {
-                welcomeVideo.classList.add('hidden');
-            });
-            welcomeVideo.play().catch(() => {
-                welcomeVideo.classList.add('hidden');
-            });
+            welcomeVideo.play().catch(() => console.log('Автоплей видео был заблокирован браузером.'));
         }
 
-        enterButton.addEventListener('click', () => {
+        // Вход в панель ТОЛЬКО по нажатию на кнопку
+        function showAdminPanel() {
             welcomeScreen.classList.add('hidden');
             adminPanel.classList.remove('hidden');
-        });
+            syncActiveTicketFromChat();
+            scrollChatToBottom();
+        }
+
+        enterButton.addEventListener('click', showAdminPanel);
 
         function syncActiveTicketFromChat() {
             const wrapper = document.querySelector('#admin-chat-content [data-selected-ticket-id]');
             activeTicketId = wrapper?.dataset?.selectedTicketId || '';
             activeTicketClosed = wrapper?.dataset?.ticketClosed === 'true';
-            sendButton.disabled = !activeTicketId || activeTicketClosed;
-            sendButton.classList.toggle('opacity-60', !activeTicketId || activeTicketClosed);
+            
+            if (sendButton) {
+                sendButton.disabled = !activeTicketId || activeTicketClosed;
+                sendButton.classList.toggle('opacity-60', !activeTicketId || activeTicketClosed);
+            }
 
+            // Убрали все классы `ring`, теперь просто добавляем/убираем класс `active-ticket`
             document.querySelectorAll('.admin-ticket-item').forEach((btn) => {
                 const isActive = activeTicketId && btn.dataset.ticketId === activeTicketId;
-                btn.classList.toggle('ring-2', isActive);
-                btn.classList.toggle('ring-[#120AFF]', isActive);
+                btn.classList.toggle('active-ticket', isActive);
             });
         }
 
@@ -394,6 +366,7 @@
             }
         });
 
+        // Обработка событий HTMX
         document.body.addEventListener('htmx:afterSwap', (event) => {
             if (event.target && event.target.id === 'admin-chat-content') {
                 syncActiveTicketFromChat();
@@ -401,8 +374,6 @@
             }
         });
 
-        syncActiveTicketFromChat();
-        scrollChatToBottom();
     </script>
 </body>
 </html>
