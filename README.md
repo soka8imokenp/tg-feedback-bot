@@ -49,3 +49,23 @@
 * **Start Command**: `gunicorn core.wsgi:application`
 ```
 
+## 👥 Несколько админов (главный + дополнительные)
+Теперь админов можно добавлять **прямо в Django Admin**:
+
+1. Откройте `Django Admin -> Profiles -> Add profile`.
+2. Укажите:
+   - `Admin nick` (ник админа),
+   - `Parol` (пароль),
+   - `telegram_id` (его Telegram ID),
+   - флаг `Главный админ (superuser)` — только для owner.
+3. Сохраните.
+
+После сохранения автоматически создаётся/обновляется Django-пользователь:
+- `is_staff=True` для любого админа,
+- `is_superuser=True` только для главного админа (owner),
+- привязка Telegram ID хранится в `Profile`.
+
+Важно: один Telegram ID может быть привязан только к одному администратору.
+
+> Для автоматизации можно и дальше использовать `python manage.py create_tg_admin ...`, но это уже не обязательно.
+
