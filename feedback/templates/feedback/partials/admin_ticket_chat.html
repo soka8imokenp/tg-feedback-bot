@@ -5,12 +5,12 @@
         <h2 class="text-lg font-bold text-black">{{ selected_ticket.subject }}</h2>    
     </div>
 
-    <div id="ticket-messages-scroll" class="flex-1 space-y-3 overflow-y-auto pr-1 mb-1">
+    <div id="ticket-messages-scroll" class="flex-1 space-y-3 overflow-y-auto mb-1">
         {% for msg in messages %}
-            <div class="max-w-[88%] px-3 py-2 rounded-xl text-sm border {% if msg.is_from_admin %}bg-[#82B3FB] text-white border-black{% else %}bg-white text-black border-black/20{% endif %}">
-                <div class="max-w-[88%] px-3 py-2 rounded-xl text-sm border {% if msg.is_from_admin %}bg-[#82B3FB] text-white border-black{% else %}bg-white text-black border-black/20{% endif %}">
-                    <p class="whitespace-pre-wrap break-words">{{ msg.text }}</p>
-                    <p class="text-[10px] mt-1 {% if msg.is_from_admin %}text-white/80{% else %}text-black/40{% endif %}">{{ msg.time }}</p>
+            <div class="msg-row {% if msg.is_from_admin %}msg-row--admin{% else %}msg-row--user{% endif %}">
+                <div class="msg-bubble {% if msg.is_from_admin %}msg-bubble--admin{% else %}msg-bubble--user{% endif %}">
+                    <p>{{ msg.text }}</p>
+                    <span class="msg-time {% if msg.is_from_admin %}text-white/80{% else %}text-black/50{% endif %}">{{ msg.time }}</span>
                 </div>
             </div>
         {% empty %}

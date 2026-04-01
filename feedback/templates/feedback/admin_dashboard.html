@@ -138,12 +138,61 @@
         }
 
         #admin-chat-content {
+            min-height: 0;
+        }
+
+        #ticket-messages-scroll {
             background-image:
                 linear-gradient(rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.86)),
                 url("{% static 'feedback/wtf.png' %}");
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            border-radius: 18px;
+            padding: 12px;
+        }
+
+        .msg-row {
+            display: flex;
+        }
+
+        .msg-row--admin {
+            justify-content: flex-end;
+        }
+
+        .msg-row--user {
+            justify-content: flex-start;
+        }
+
+        .msg-bubble {
+            max-width: 88%;
+            padding: 10px 12px;
+            border: 1px solid rgba(0, 0, 0, 0.18);
+            font-size: 13px;
+            line-height: 1.35;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.08);
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .msg-bubble--admin {
+            background: #82B3FB;
+            color: #fff;
+            border-radius: 16px 16px 4px 16px;
+        }
+
+        .msg-bubble--user {
+            background: #ffffff;
+            color: #101114;
+            border-radius: 16px 16px 16px 4px;
+        }
+
+        .msg-time {
+            display: block;
+            margin-top: 4px;
+            font-size: 10px;
+            opacity: 0.7;
         }
 
         .chat-header {
@@ -219,7 +268,7 @@
                 flex-wrap: wrap;
                 gap: 10px;
             }
-            .tickets-list { max-height: 32vh; }
+            .tickets-list { max-height: 28vh; }
             #admin-chat-content { padding: 16px !important; }
         }
 
@@ -279,7 +328,7 @@
                     <div class="flex gap-4">
                         {% csrf_token %}
                         <input type="hidden" id="admin-user-id" value="{{ user_id }}">
-                        <input type="text" id="admin-reply-input" class="chat-input-field" placeholder="Yozing...">
+                        <input type="text" id="admin-reply-input" class="chat-input-field" placeholder="Foydalanuvchiga javob yozing...">
                         <button id="admin-send-btn" class="send-btn">Javob yuborish</button>
                     </div>
                 </div>
