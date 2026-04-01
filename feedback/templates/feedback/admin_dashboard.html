@@ -32,7 +32,7 @@
             letter-spacing: -0.02em;
             width: 100vw;
             max-width: 100%;
-            overflow-x: hidden; /* Защита от скролла вправо */
+            overflow-x: hidden;
         }
 
         /* --- ПРЕЛОАДЕР --- */
@@ -64,7 +64,6 @@
             overflow: hidden;
         }
 
-        /* Фоллбек при ошибке видео */
         .video-fallback {
             background-image: url("{% static 'feedback/admin_wall.png' %}") !important;
             background-size: cover;
@@ -108,7 +107,7 @@
             border: 2px solid var(--dark);
             border-radius: 24px; 
             box-shadow: 6px 6px 0px rgba(0,0,0,0.05);
-            padding: 20px; /* Уменьшил паддинг для мобилок */
+            padding: 15px 20px;
         }
 
         .neo-card {
@@ -130,6 +129,86 @@
             max-width: 100%;
         }
 
+        /* --- ЧАТ (Центральная часть) --- */
+        .chat-shell { 
+            position: relative; 
+            background: #FFFFFF; 
+            min-width: 0; 
+        }
+
+        /* Окно сообщений с фоновой картинкой wtf.png */
+        #admin-chat-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1;
+            background-image: url("{% static 'feedback/wtf.png' %}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: local;
+            min-h: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 20px;
+        }
+
+        /* Белый эффект (стеклянный слой) поверх картинки wtf.png для читаемости */
+        #admin-chat-content::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.75); /* Белый слой с прозрачностью */
+            backdrop-filter: blur(2px); /* Размытие как в приветствии */
+            z-index: -1; /* Чтобы текст был над слоем */
+        }
+
+        .chat-header {
+            background: #FFFFFF;
+            padding: 12px 20px;
+            border-bottom: 2px solid var(--dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            border-top: 2px solid var(--dark);
+            background: white; /* Чисто белый фон для ввода */
+            margin-top: auto;
+            z-index: 10;
+        }
+
+        /* Поле ввода */
+        .chat-input-field {
+            width: 100%;
+            border: 2px solid var(--dark);
+            border-radius: 15px;
+            padding: 12px;
+            font-weight: 600;
+            color: var(--dark); 
+            outline: none;
+            font-size: 14px;
+            background: white;
+        }
+
+        .send-btn {
+            background-color: var(--ultramarine) !important;
+            color: white;
+            font-weight: 900;
+            text-transform: uppercase;
+            padding: 10px 15px;
+            border: 2px solid var(--dark);
+            border-radius: 15px;
+            box-shadow: 4px 4px 0px var(--dark);
+            transition: all 0.1s;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        /* Список тикетов */
         .tickets-list {
             padding: 15px;
             display: flex;
@@ -151,54 +230,10 @@
             width: 100%;
         }
 
-        .neo-ticket:hover,
         .neo-ticket.active-ticket {
             border-color: var(--accent-blue);
-            transform: translateY(-3px);
-            box-shadow: 0px 10px 20px rgba(130, 179, 251, 0.2);
-        }
-
-        .chat-shell { position: relative; background: #FFFFFF; min-width: 0; }
-
-        .chat-header {
-            background: #FFFFFF;
-            padding: 12px 20px;
-            border-bottom: 2px solid var(--dark);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .chat-input-area {
-            padding: 15px;
-            border-top: 2px solid var(--dark);
-            background: white;
-            margin-top: auto;
-        }
-
-        .chat-input-field {
-            width: 100%;
-            border: 2px solid var(--dark);
-            border-radius: 15px;
-            padding: 12px;
-            font-weight: 600;
-            color: var(--dark); 
-            outline: none;
-            font-size: 14px;
-        }
-
-        .send-btn {
-            background-color: var(--ultramarine) !important;
-            color: white;
-            font-weight: 900;
-            text-transform: uppercase;
-            padding: 10px 15px;
-            border: 2px solid var(--dark);
-            border-radius: 15px;
-            box-shadow: 4px 4px 0px var(--dark);
-            transition: all 0.1s;
-            font-size: 12px;
-            white-space: nowrap;
+            transform: translateY(-2px);
+            box-shadow: 0px 5px 15px rgba(130, 179, 251, 0.2);
         }
 
         .hidden { display: none !important; }
@@ -206,16 +241,17 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: var(--accent-blue); border-radius: 10px; }
 
-        /* Адаптация под мобильные устройства */
+        /* Адаптация Mobile / WebApp */
         @media (max-width: 1024px) {
             body { padding: 8px; }
             .neo-layout { grid-template-columns: 1fr; }
             .neo-shell { gap: 8px; }
-            .neo-topbar { padding: 15px; }
-            .neo-topbar h1 { font-size: 1.25rem; }
-            .tickets-list { max-height: 45vh; }
+            .neo-topbar { padding: 12px; }
+            .neo-topbar h1 { font-size: 1.1rem; }
+            .tickets-list { max-height: 35vh; }
+            #admin-chat-content { padding: 15px; }
             .chat-input-area .flex { gap: 8px; }
-            .send-btn { padding: 10px; }
+            .send-btn { padding: 10px; font-size: 11px; }
         }
     </style>
 </head>
@@ -248,25 +284,25 @@
         <header class="neo-topbar flex justify-between items-center">
             <div class="min-w-0">
                 <span class="text-[9px] font-black text-blue-400 uppercase tracking-[0.3em]">Active</span>
-                <h1 class="text-xl font-black truncate">Admin: {{ staff_user.username }}</h1>
+                <h1 class="text-lg font-black truncate">Admin: {{ staff_user.username }}</h1>
             </div>
-            <div class="flex gap-2 sm:gap-4 shrink-0">
-                <div class="px-3 py-1.5 border-2 border-dark rounded-full font-black text-[10px] sm:text-sm">T: {{ tickets|length }}</div>
-                <div class="px-3 py-1.5 bg-red-50 border-2 border-red-500 text-red-500 rounded-full font-black text-[10px] sm:text-sm animate-pulse">LIVE</div>
+            <div class="flex gap-2 shrink-0">
+                <div class="px-3 py-1.5 border-2 border-dark rounded-full font-black text-[10px]">T: {{ tickets|length }}</div>
+                <div class="px-3 py-1.5 bg-red-50 border-2 border-red-500 text-red-500 rounded-full font-black text-[10px] animate-pulse">LIVE</div>
             </div>
         </header>
 
         <main class="neo-layout">
             <section class="neo-card chat-shell">
                 <div class="chat-header">
-                    <span class="font-black text-[10px] tracking-widest text-gray-400">TERMINAL // SESSION</span>
+                    <span class="font-black text-[9px] tracking-widest text-gray-400">TERMINAL // SESSION</span>
                     <div class="flex gap-2">
                         <div class="w-2.5 h-2.5 rounded-full bg-yellow-400 border border-black"></div>
                         <div class="w-2.5 h-2.5 rounded-full bg-red-400 border border-black"></div>
                     </div>
                 </div>
                 
-                <div id="admin-chat-content" class="flex-grow overflow-y-auto p-4 sm:p-10 flex flex-col gap-4 min-h-[300px]">
+                <div id="admin-chat-content">
                     <div class="h-full flex flex-col items-center justify-center opacity-20 py-20">
                         <h2 class="text-4xl font-black italic">Kawaii OS</h2>
                     </div>
@@ -319,7 +355,6 @@
         const videoSrc = "{% static 'feedback/hello_admin_2.mp4' %}";
         const replyUrlTemplate = "{% url 'feedback:admin_reply_ticket' 999999 %}";
 
-        // Функция скрытия лоадера
         function hidePreloader() {
             if (preloader) {
                 preloader.style.opacity = '0';
@@ -327,27 +362,17 @@
             }
         }
 
-        // Логика видео и прелоадера
         if (welcomeVideo) {
             welcomeVideo.src = videoSrc;
-            
-            // Видео начало играть — убираем загрузку
             welcomeVideo.onplaying = hidePreloader;
-
-            // Ошибка загрузки видео — убираем загрузку и ставим картинку
             welcomeVideo.onerror = () => {
                 hidePreloader();
                 welcomeContainer.classList.add('video-fallback');
                 welcomeVideo.classList.add('hidden');
             };
-
-            welcomeVideo.play().catch(() => {
-                // Если автоплей запрещен — скрываем, чтобы не висел вечно
-                hidePreloader();
-            });
+            welcomeVideo.play().catch(() => hidePreloader());
         }
 
-        // Вход
         enterButton.addEventListener('click', () => {
             welcomeScreen.classList.add('hidden');
             adminPanel.classList.remove('hidden');
