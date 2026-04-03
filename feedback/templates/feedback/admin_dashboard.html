@@ -244,18 +244,21 @@
         .hidden { display: none !important; }
 
         #admin-confirm-modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(12, 10, 20, 0.8);
-            backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
+    position: fixed;
+    inset: 0;
+    /* Вместо темного цвета ставим белый с прозрачностью */
+    background: rgba(255, 255, 255, 0.35); 
+    /* Добавляем эффект размытия (как на приветственном экране) */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); /* Для поддержки Safari */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
 
         #admin-confirm-modal.show {
             opacity: 1;
@@ -280,14 +283,18 @@
         }
 
         #admin-close-success-modal {
-            position: fixed;
-            inset: 0;
-            z-index: 10001;
-            background: #0c0a14;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
+        position: fixed;
+        inset: 0;
+        z-index: 10001;
+        /* Светлый и мутный фон */
+        background: rgba(255, 255, 255, 0.35); 
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+
         }
 
         @keyframes floating {
@@ -388,21 +395,21 @@
 
     <div id="admin-confirm-modal">
         <div class="admin-modal-box">
-            <img src="{% static 'feedback/huh.png' %}" class="w-20 mx-auto mb-4 animate-float" alt="Aniqlash">
+            <img src="{% static 'feedback/huh.png' %}" class="w-20 mx-auto mb-4" alt="Aniqlash">
             <h3 class="text-black font-bold text-sm uppercase mb-2">Aniqmi ?</h3>
             <p class="text-gray-500 text-[10px] font-bold uppercase mb-6 leading-relaxed">Murojaatni yopmochimisiz</p>
             <div class="flex gap-3">
                 <button id="admin-confirm-no" class="flex-1 py-3 border-2 border-black rounded-xl text-black font-bold text-[10px] uppercase transition-transform active:scale-95">Yo'q</button>
-                <button id="admin-confirm-yes" class="flex-1 py-3 bg-[#ad88b9] border-2 border-black rounded-xl text-white font-bold text-[10px] uppercase shadow-[3px_3px_0px_#000] transition-transform active:translate-y-1 active:shadow-none">Ha!</button>
+                <button id="admin-confirm-yes" class="flex-1 py-3 bg-[#82B3FB] border-2 border-black rounded-xl text-white font-bold text-[10px] uppercase shadow-[3px_3px_0px_#000] transition-transform active:translate-y-1 active:shadow-none">Ha!</button>
             </div>
         </div>
     </div>
 
     <div id="admin-close-success-modal" class="hidden">
-        <div class="max-w-sm w-full text-center space-y-5 text-white">
-            <img src="{% static 'feedback/soldier.png' %}" class="w-52 mx-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]" alt="Murojaat yopildi">
-            <h3 class="text-2xl font-bold uppercase tracking-tight">Murojaat yopildi</h3>
-            <p class="text-[11px] text-white/60 uppercase font-bold tracking-widest leading-relaxed">
+        <div class="admin-modal-box !max-w-sm">
+            <img src="{% static 'feedback/soldier.png' %}" class="w-52 mx-auto drop-shadow-[0_8px_16px_rgba(0,0,0,0.1)] mb-4" alt="Murojaat yopildi">
+            <h3 class="text-2xl font-black uppercase tracking-tight text-black mb-2">Murojaat yopildi</h3>
+            <p class="text-[11px] text-gray-500 uppercase font-bold tracking-widest leading-relaxed mb-6">
                 Bu murojaat bo'yicha ish yakunlandi
             </p>
             <button id="admin-close-success-ok" class="cta-btn !text-xs !py-4">Tushunarli</button>
