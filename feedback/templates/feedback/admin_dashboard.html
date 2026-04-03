@@ -286,14 +286,14 @@
         position: fixed;
         inset: 0;
         z-index: 10001;
-        /* Светлый и мутный фон */
-        background: rgba(255, 255, 255, 0.35); 
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        /* Делаем белый фон более плотным, но оставляем размытие */
+        background: rgba(255, 255, 255, 0.85); 
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 24px;
+
 
         }
 
@@ -406,7 +406,7 @@
     </div>
 
     <div id="admin-close-success-modal" class="hidden">
-        <div class="admin-modal-box !max-w-sm">
+        <div class="flex flex-col items-center justify-center w-full max-w-md px-6 text-center"></div>
             <img src="{% static 'feedback/soldier.png' %}" class="w-52 mx-auto drop-shadow-[0_8px_16px_rgba(0,0,0,0.1)] mb-4" alt="Murojaat yopildi">
             <h3 class="text-2xl font-black uppercase tracking-tight text-black mb-2">Murojaat yopildi</h3>
             <p class="text-[11px] text-gray-500 uppercase font-bold tracking-widest leading-relaxed mb-6">
