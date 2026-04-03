@@ -243,6 +243,62 @@
 
         .hidden { display: none !important; }
 
+        #admin-confirm-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(12, 10, 20, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        #admin-confirm-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .admin-modal-box {
+            background: white;
+            border: 4px solid #000;
+            border-radius: 30px;
+            padding: 24px;
+            width: 85%;
+            max-width: 320px;
+            box-shadow: 12px 12px 0px #000;
+            transform: scale(0.8);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-align: center;
+        }
+
+        #admin-confirm-modal.show .admin-modal-box {
+            transform: scale(1);
+        }
+
+        #admin-close-success-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 10001;
+            background: #0c0a14;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .animate-float { animation: floating 3s ease-in-out infinite; }
+
+
         @media (max-width: 1024px) {
             .neo-layout { grid-template-columns: 1fr; }
             #admin-chat-content { height: 450px; }
@@ -330,6 +386,30 @@
         </main>
     </div>
 
+    <div id="admin-confirm-modal">
+        <div class="admin-modal-box">
+            <img src="{% static 'feedback/huh.png' %}" class="w-20 mx-auto mb-4 animate-float" alt="Aniqlash">
+            <h3 class="text-black font-bold text-sm uppercase mb-2">Aniqmi ?</h3>
+            <p class="text-gray-500 text-[10px] font-bold uppercase mb-6 leading-relaxed">Murojaatni yopmochimisiz</p>
+            <div class="flex gap-3">
+                <button id="admin-confirm-no" class="flex-1 py-3 border-2 border-black rounded-xl text-black font-bold text-[10px] uppercase transition-transform active:scale-95">Yo'q</button>
+                <button id="admin-confirm-yes" class="flex-1 py-3 bg-[#ad88b9] border-2 border-black rounded-xl text-white font-bold text-[10px] uppercase shadow-[3px_3px_0px_#000] transition-transform active:translate-y-1 active:shadow-none">Ha!</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-close-success-modal" class="hidden">
+        <div class="max-w-sm w-full text-center space-y-5 text-white">
+            <img src="{% static 'feedback/soldier.png' %}" class="w-52 mx-auto drop-shadow-[0_12px_24px_rgba(0,0,0,0.35)]" alt="Murojaat yopildi">
+            <h3 class="text-2xl font-bold uppercase tracking-tight">Murojaat yopildi</h3>
+            <p class="text-[11px] text-white/60 uppercase font-bold tracking-widest leading-relaxed">
+                Bu murojaat bo'yicha ish yakunlandi
+            </p>
+            <button id="admin-close-success-ok" class="cta-btn !text-xs !py-4">Tushunarli</button>
+        </div>
+    </div>
+
+
     <script>
         const preloader = document.getElementById('preloader');
         const welcomeScreen = document.getElementById('admin-welcome');
@@ -338,9 +418,14 @@
         const welcomeVideo = document.getElementById('admin-welcome-video');
         const replyInput = document.getElementById('admin-reply-input');
         const sendButton = document.getElementById('admin-send-btn');
+        const adminConfirmModal = document.getElementById('admin-confirm-modal');
+        const adminCloseSuccessModal = document.getElementById('admin-close-success-modal');
+
         
         const videoSrc = "{% static 'feedback/hello_admin_2.mp4' %}";
+        const replyUrlTemplate = "{% url 'feedback:admin_reply_ticket' 999999 %}";
         const closeUrlTemplate = "{% url 'feedback:admin_close_ticket' 999999 %}";
+
 
         function hidePreloader() {
             if (preloader) {
@@ -438,6 +523,23 @@
             });
         }
 
+        function openCloseConfirmModal() {
+            if (adminConfirmModal) adminConfirmModal.classList.add('show');
+        }
+
+        function hideCloseConfirmModal() {
+            if (adminConfirmModal) adminConfirmModal.classList.remove('show');
+        }
+
+        function showCloseSuccessModal() {
+            if (adminCloseSuccessModal) adminCloseSuccessModal.classList.remove('hidden');
+        }
+
+        function hideCloseSuccessModal() {
+            if (adminCloseSuccessModal) adminCloseSuccessModal.classList.add('hidden');
+        }
+
+
 
         sendButton?.addEventListener('click', sendAdminReply);
         replyInput?.addEventListener('keydown', (e) => {
@@ -455,8 +557,17 @@
         document.body.addEventListener('click', (e) => {
             const closeBtn = e.target.closest('#admin-close-btn');
             if (!closeBtn || closeBtn.disabled) return;
-            closeActiveTicket();
+            openCloseConfirmModal();
         });
+
+        document.getElementById('admin-confirm-no')?.addEventListener('click', hideCloseConfirmModal);
+        document.getElementById('admin-confirm-yes')?.addEventListener('click', () => {
+            hideCloseConfirmModal();
+            closeActiveTicket();
+            showCloseSuccessModal();
+        });
+        document.getElementById('admin-close-success-ok')?.addEventListener('click', hideCloseSuccessModal);
+
 
     </script>
 </body>
