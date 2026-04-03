@@ -11,6 +11,7 @@ urlpatterns = [
     # Admin WebApp panel
     path('admin/ticket/<int:ticket_id>/chat/', views.admin_ticket_chat, name='admin_ticket_chat'),
     path('admin/ticket/<int:ticket_id>/reply/', views.admin_reply_ticket, name='admin_reply_ticket'),
+    path('admin/ticket/<int:ticket_id>/close/', views.admin_close_ticket, name='admin_close_ticket'),
 
     # User WebApp flow
     path('submit/', views.submit_feedback, name='submit_feedback'),

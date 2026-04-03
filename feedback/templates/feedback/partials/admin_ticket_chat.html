@@ -2,7 +2,21 @@
 <div class="h-full flex flex-col" data-selected-ticket-id="{{ selected_ticket.id }}" data-ticket-closed="{{ selected_ticket.is_closed|yesno:'true,false' }}">
     <div class="pb-3 border-b border-black/10 mb-3">
         <p class="text-xs text-black/60">Ticket #{{ selected_ticket.id }} · @{{ selected_ticket.username }}</p>
-        <h2 class="text-lg font-bold text-black">{{ selected_ticket.subject }}</h2>    
+        <div class="mt-1 flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-lg font-bold text-black">{{ selected_ticket.subject }}</h2>
+            {% if not selected_ticket.is_closed %}
+                <button
+                    id="admin-close-btn"
+                    class="inline-flex items-center justify-center rounded-xl border-2 border-black bg-[#82B3FB] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white shadow-[3px_3px_0px_#1A1A1B] transition active:translate-y-[1px] active:shadow-[1px_1px_0px_#1A1A1B]"
+                    title="Mijoz murojaatini yopish"
+                >
+                    Yopish
+                </button>
+            {% else %}
+                <span class="rounded-xl border border-black/20 bg-gray-100 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-gray-500">Yopilgan</span>
+            {% endif %}
+        </div>
+        <p class="mt-1 text-[10px] font-bold uppercase tracking-wider text-black/40">Bu tugma murojaatni to‘liq yopadi</p>    
     </div>
 
     <div id="ticket-messages-scroll" class="flex-1 space-y-3 overflow-y-auto pr-1 mb-1">

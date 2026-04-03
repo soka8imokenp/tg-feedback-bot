@@ -319,7 +319,7 @@
                         class="neo-ticket admin-ticket-item">
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-[8px] font-black opacity-30">#{{ ticket.id }}</span>
-                            <div class="w-2 h-2 {% if ticket.is_closed %}bg-gray-400{% else %}bg-[#5EEA7E]{% endif %} rounded-full border border-black"></div>
+                            <div class="ticket-status-dot w-2 h-2 {% if ticket.is_closed %}bg-gray-400{% else %}bg-[#5EEA7E]{% endif %} rounded-full border border-black"></div>
                         </div>
                         <h3 class="font-black text-xs truncate">{{ ticket.subject }}</h3>
                         <p class="text-[9px] font-bold text-blue-400">@{{ ticket.username }}</p>
@@ -340,7 +340,7 @@
         const sendButton = document.getElementById('admin-send-btn');
         
         const videoSrc = "{% static 'feedback/hello_admin_2.mp4' %}";
-        const replyUrlTemplate = "{% url 'feedback:admin_reply_ticket' 999999 %}";
+        const closeUrlTemplate = "{% url 'feedback:admin_close_ticket' 999999 %}";
 
         function hidePreloader() {
             if (preloader) {
@@ -367,15 +367,33 @@
             const wrapper = document.querySelector('#admin-chat-content [data-selected-ticket-id]');
             const activeId = wrapper?.dataset?.selectedTicketId || '';
             const isClosed = wrapper?.dataset?.ticketClosed === 'true';
+            const closeButton = document.getElementById('admin-close-btn');
             
             if (sendButton) {
                 sendButton.disabled = !activeId || isClosed;
                 sendButton.style.opacity = (!activeId || isClosed) ? '0.5' : '1';
             }
 
+            if (closeButton) {
+                closeButton.disabled = !activeId || isClosed;
+                closeButton.style.opacity = (!activeId || isClosed) ? '0.6' : '1';
+                closeButton.style.cursor = (!activeId || isClosed) ? 'not-allowed' : 'pointer';
+            }
+
+
             document.querySelectorAll('.admin-ticket-item').forEach((btn) => {
                 btn.classList.toggle('active-ticket', activeId && btn.dataset.ticketId === activeId);
             });
+
+            if (activeId) {
+                const activeTicketBtn = document.querySelector(`.admin-ticket-item[data-ticket-id="${activeId}"]`);
+                const statusDot = activeTicketBtn?.querySelector('.ticket-status-dot');
+                if (statusDot) {
+                    statusDot.classList.toggle('bg-gray-400', isClosed);
+                    statusDot.classList.toggle('bg-[#5EEA7E]', !isClosed);
+                }
+            }
+
         }
 
         function scrollChatToBottom() {
@@ -404,6 +422,23 @@
             replyInput.focus();
         }
 
+        function closeActiveTicket() {
+            const wrapper = document.querySelector('#admin-chat-content [data-selected-ticket-id]');
+            const activeId = wrapper?.dataset?.selectedTicketId;
+            const isClosed = wrapper?.dataset?.ticketClosed === 'true';
+            if (!activeId || isClosed) return;
+
+            const closeUrl = closeUrlTemplate.replace('999999', activeId);
+            const csrf = document.querySelector('input[name=csrfmiddlewaretoken]')?.value;
+
+            htmx.ajax('POST', closeUrl, {
+                target: '#admin-chat-content .chat-messages-wrapper',
+                swap: 'innerHTML',
+                headers: csrf ? { 'X-CSRFToken': csrf } : {},
+            });
+        }
+
+
         sendButton?.addEventListener('click', sendAdminReply);
         replyInput?.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAdminReply(); }
@@ -416,6 +451,13 @@
                 scrollChatToBottom();
             }
         });
+
+        document.body.addEventListener('click', (e) => {
+            const closeBtn = e.target.closest('#admin-close-btn');
+            if (!closeBtn || closeBtn.disabled) return;
+            closeActiveTicket();
+        });
+
     </script>
 </body>
 </html>

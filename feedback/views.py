@@ -166,6 +166,19 @@ def admin_reply_ticket(request, ticket_id):
         ticket.save()
 
     return admin_ticket_chat(request, ticket_id)
+
+
+def admin_close_ticket(request, ticket_id):
+    if request.method != 'POST':
+        return HttpResponse("Metod xato", status=400)
+
+    ticket = get_object_or_404(Application, id=ticket_id)
+    ticket.is_closed = True
+    ticket.updated_at = timezone.now()
+    ticket.save()
+
+    return admin_ticket_chat(request, ticket_id)
+
            
 
 def load_more_tickets(request):
