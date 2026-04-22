@@ -11,7 +11,7 @@
 * **Django Admin**: Удобное управление заявками и ответами пользователям.
 
 ## 🛠 Стек технологий
-* **Backend**: Django 5.x
+* **Backend**: Django 
 * **Frontend**: HTMX, Tailwind CSS, JavaScript (Telegram WebApp SDK)
 * **Database**: PostgreSQL (Production), SQLite (Local)
 * **Server**: Gunicorn (для Render)
