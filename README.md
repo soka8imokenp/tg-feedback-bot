@@ -20,7 +20,7 @@
 
 1. **Клонируйте репозиторий:**
    ```bash
-   git clone [https://github.com/devvesama/tg-feedback-bot.git](https://github.com/devvesama/tg-feedback-bot.git)
+   git clone https://github.com/soka8imokenp/tg-feedback-bot.git
    cd tg-feedback-bot
    ```
 
@@ -44,10 +44,54 @@
    python manage.py runserver
    ```
 
+## 🐳 Запуск с Docker
+
+Для удобства проект уже подготовлен для работы с Docker.
+
+### Требования:
+- Docker
+- Docker Compose
+
+### Быстрый старт:
+
+1. **Создайте `.env` файл** (если его еще нет):
+   ```env
+   BOT_TOKEN=ваш_токен
+   ADMIN_ID=ваш_id
+   SECRET_KEY=ваш_секретный_ключ_django
+   WEBAPP_URL=ваш_url_веб_приложения
+   ```
+
+2. **Запустите контейнеры:**
+   ```bash
+   docker-compose up --build
+   ```
+
+3. **Приложение будет доступно на:** `http://localhost:8000`
+
+4. **Чтобы запустить миграции в контейнере:**
+   ```bash
+   docker-compose exec web python manage.py migrate
+   ```
+
+5. **Чтобы создать суперпользователя:**
+   ```bash
+   docker-compose exec web python manage.py createsuperuser
+   ```
+
+### Остановка контейнеров:
+```bash
+docker-compose down
+```
+
+### Просмотр логов:
+```bash
+docker-compose logs -f web
+```
+
 ## ☁️ Деплой (Render)
 * **Build Command**: `pip install -r requirements.txt && python manage.py migrate`
 * **Start Command**: `gunicorn core.wsgi:application`
-```
 
 ## 👥 Несколько админов (главный + дополнительные)
 Теперь админов можно добавлять **прямо в Django Admin**:
@@ -68,4 +112,3 @@
 Важно: один Telegram ID может быть привязан только к одному администратору.
 
 > Для автоматизации можно и дальше использовать `python manage.py create_tg_admin ...`, но это уже не обязательно.
-
